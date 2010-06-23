@@ -22,8 +22,15 @@
 
 #include "autoz.h"
 
+typedef struct _Rule Rule;
+struct _Rule
+	{
+		AutozIRole *irole;
+		AutozIResource *iresource;
+	};
+
 static void autoz_class_init (AutozClass *class);
-static void autoz_init (Autoz *form);
+static void autoz_init (Autoz *autoz);
 
 static void autoz_set_property (GObject *object,
                                guint property_id,
@@ -39,7 +46,10 @@ static void autoz_get_property (GObject *object,
 typedef struct _AutozPrivate AutozPrivate;
 struct _AutozPrivate
 	{
-		gpointer foo;
+		GHashTable *roles;
+		GHashTable *resources;
+
+		GList *rules;
 	};
 
 G_DEFINE_TYPE (Autoz, autoz, G_TYPE_OBJECT)
@@ -56,9 +66,14 @@ autoz_class_init (AutozClass *class)
 }
 
 static void
-autoz_init (Autoz *form)
+autoz_init (Autoz *autoz)
 {
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (form);
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+
+	priv->roles = g_hash_table_new (g_str_hash, g_str_equal);
+	priv->resources = g_hash_table_new (g_str_hash, g_str_equal);
+
+	priv->rules = NULL;
 }
 
 /**
@@ -73,6 +88,110 @@ Autoz
 	return AUTOZ (g_object_new (autoz_get_type (), NULL));
 }
 
+void
+autoz_add_role (Autoz *autoz, AutozIRole *irole)
+{
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+
+	const gchar *role_id;
+
+	role_id = autoz_irole_get_role_id (irole);
+
+	if (g_hash_table_lookup (priv->roles, role_id) == NULL)
+		{
+			g_hash_table_insert (priv->roles, (gpointer)role_id, (gpointer)irole);
+		}
+}
+
+void
+autoz_add_resource (Autoz *autoz, AutozIResource *iresource)
+{
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+
+	const gchar *resource_id;
+
+	resource_id = autoz_iresource_get_resource_id (iresource);
+
+	if (g_hash_table_lookup (priv->resources, resource_id) == NULL)
+		{
+			g_hash_table_insert (priv->resources, (gpointer)resource_id, (gpointer)iresource);
+		}
+}
+
+void
+autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
+{
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+
+	AutozIRole *real_irole;
+	AutozIResource *real_iresource;
+
+	Rule r;
+
+	/* check if exists */
+	real_irole = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
+	if (real_irole == NULL)
+		{
+			return;
+		}
+	real_iresource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+	if (real_iresource == NULL)
+		{
+			return;
+		}
+
+	r.irole = real_irole;
+	r.iresource = real_iresource;
+
+	priv->rules = g_list_append (priv->rules, g_memdup (&r, sizeof (Rule)));
+}
+
+gboolean
+autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
+{
+	gboolean ret;
+
+	AutozIRole *real_irole;
+	AutozIResource *real_iresource;
+
+	GList *rules;
+	Rule *r;
+
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = FALSE;
+
+	real_irole = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
+	if (real_irole == NULL)
+		{
+			return ret;
+		}
+	real_iresource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+	if (real_iresource == NULL)
+		{
+			return ret;
+		}
+
+	rules = g_list_first (priv->rules);
+	while (rules != NULL)
+		{
+			r = (Rule *)rules->data;
+
+			if (g_strcmp0 (autoz_irole_get_role_id (real_irole), autoz_irole_get_role_id (r->irole)) == 0)
+				{
+					if (g_strcmp0 (autoz_iresource_get_resource_id (real_iresource), autoz_iresource_get_resource_id (r->iresource)) == 0)
+						{
+							ret = TRUE;
+							break;
+						}
+				}
+
+			rules = g_list_next (rules);
+		}
+
+	return ret;
+}
+
 /* PRIVATE */
 static void
 autoz_set_property (GObject *object,
@@ -80,9 +199,9 @@ autoz_set_property (GObject *object,
                    const GValue *value,
                    GParamSpec *pspec)
 {
-	Autoz *form = (Autoz *)object;
+	Autoz *autoz = (Autoz *)object;
 
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (form);
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
 	switch (property_id)
 		{
@@ -98,9 +217,9 @@ autoz_get_property (GObject *object,
                    GValue *value,
                    GParamSpec *pspec)
 {
-	Autoz *form = (Autoz *)object;
+	Autoz *autoz = (Autoz *)object;
 
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (form);
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
 	switch (property_id)
 		{

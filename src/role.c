@@ -20,10 +20,15 @@
 	#include <config.h>
 #endif
 
-#include "autoz_role.h"
+#include "role.h"
+#include "role_interface.h"
 
 static void autoz_role_class_init (AutozRoleClass *class);
-static void autoz_role_init (AutozRole *form);
+static void autoz_role_init (AutozRole *role);
+
+static void autoz_irole_interface_init (AutozIRoleIface *iface);
+
+static const gchar *autoz_role_get_role_id (AutozIRole *irole);
 
 static void autoz_role_set_property (GObject *object,
                                guint property_id,
@@ -34,15 +39,17 @@ static void autoz_role_get_property (GObject *object,
                                GValue *value,
                                GParamSpec *pspec);
 
-#define AUTOZ_ROLE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), TYPE_AUTOZ_ROLE, AutozRolePrivate))
+#define AUTOZ_ROLE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), AUTOZ_TYPE_ROLE, AutozRolePrivate))
 
 typedef struct _AutozRolePrivate AutozRolePrivate;
 struct _AutozRolePrivate
 	{
-		gpointer foo;
+		gchar *role_id;
 	};
 
-G_DEFINE_TYPE (AutozRole, autoz_role, G_TYPE_OBJECT)
+G_DEFINE_TYPE_WITH_CODE (AutozRole, autoz_role, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (AUTOZ_TYPE_IROLE,
+                                                autoz_irole_interface_init));
 
 static void
 autoz_role_class_init (AutozRoleClass *class)
@@ -61,19 +68,52 @@ autoz_role_init (AutozRole *form)
 	AutozRolePrivate *priv = AUTOZ_ROLE_GET_PRIVATE (form);
 }
 
+static void
+autoz_irole_interface_init (AutozIRoleIface *iface)
+{
+	iface->get_role_id = autoz_role_get_role_id;
+}
+
 /**
  * autoz_role_new:
+ * @role_id:
  *
  * Returns: the newly created #AutozRole object.
  */
 AutozRole
-*autoz_role_new ()
+*autoz_role_new (const gchar *role_id)
 {
+	AutozRole *role;
+	AutozRolePrivate *priv;
 
-	return AUTOZ_ROLE (g_object_new (autoz_role_get_type (), NULL));
+	role = AUTOZ_ROLE (g_object_new (autoz_role_get_type (), NULL));
+
+	priv = AUTOZ_ROLE_GET_PRIVATE (role);
+
+	priv->role_id = g_strdup (role_id);
+
+	return role;
 }
 
 /* PRIVATE */
+static const gchar
+*autoz_role_get_role_id (AutozIRole *irole)
+{
+	AutozRolePrivate *priv;
+
+	const gchar *ret;
+
+	ret = NULL;
+
+	g_return_val_if_fail (AUTOZ_IS_ROLE (irole), ret);
+
+	priv = AUTOZ_ROLE_GET_PRIVATE (irole);
+
+	ret = (const gchar *)g_strdup (priv->role_id);
+
+	return ret;
+}
+
 static void
 autoz_role_set_property (GObject *object,
                    guint property_id,

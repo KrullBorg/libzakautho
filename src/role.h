@@ -26,12 +26,12 @@
 G_BEGIN_DECLS
 
 
-#define TYPE_AUTOZ_ROLE                 (autoz_role_get_type ())
-#define AUTOZ_ROLE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_AUTOZ_ROLE, AutozRole))
-#define AUTOZ_ROLE_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_AUTOZ_ROLE, AutozRoleClass))
-#define IS_AUTOZ_ROLE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_AUTOZ_ROLE))
-#define IS_AUTOZ_ROLE_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_AUTOZ_ROLE))
-#define AUTOZ_ROLE_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_AUTOZ_ROLE, AutozRoleClass))
+#define AUTOZ_TYPE_ROLE                 (autoz_role_get_type ())
+#define AUTOZ_ROLE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_ROLE, AutozRole))
+#define AUTOZ_ROLE_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), AUTOZ_TYPE_ROLE, AutozRoleClass))
+#define AUTOZ_IS_ROLE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_ROLE))
+#define AUTOZ_IS_ROLE_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), AUTOZ_TYPE_ROLE))
+#define AUTOZ_ROLE_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), AUTOZ_TYPE_ROLE, AutozRoleClass))
 
 
 typedef struct _AutozRole AutozRole;
@@ -50,7 +50,7 @@ struct _AutozRoleClass
 GType autoz_role_get_type (void) G_GNUC_CONST;
 
 
-AutozRole *autoz_role_new (void);
+AutozRole *autoz_role_new (const gchar *role_id);
 
 
 G_END_DECLS

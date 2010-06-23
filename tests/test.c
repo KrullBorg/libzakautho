@@ -17,9 +17,40 @@
  */
 
 #include "autoz.h"
+#include "role.h"
+#include "resource.h"
 
 int
 main (int argc, char **argv)
 {
+	Autoz *autoz;
+	AutozRole *role_writer;
+	AutozRole *role_read_only;
+	AutozResource *resource;
+
+	g_type_init ();
+
+	autoz = autoz_new ();
+
+	role_writer = autoz_role_new ("writer");
+	autoz_add_role (autoz, AUTOZ_IROLE (role_writer));
+
+	role_read_only = autoz_role_new ("read-only");
+	autoz_add_role (autoz, AUTOZ_IROLE (role_read_only));
+
+	resource = autoz_resource_new ("page");
+	autoz_add_resource (autoz, AUTOZ_IRESOURCE (resource));
+
+	autoz_allow (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource));
+
+	if (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource)))
+		{
+			g_message ("writer allowed to page.");
+		}
+	if (!autoz_is_allowed (autoz, AUTOZ_IROLE (role_read_only), AUTOZ_IRESOURCE (resource)))
+		{
+			g_message ("read-only not allowed to page.");
+		}
+
 	return 0;
 }

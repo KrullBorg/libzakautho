@@ -26,12 +26,12 @@
 G_BEGIN_DECLS
 
 
-#define TYPE_AUTOZ_RESOURCE                 (autoz_resource_get_type ())
-#define AUTOZ_RESOURCE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_AUTOZ_RESOURCE, AutozResource))
-#define AUTOZ_RESOURCE_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_AUTOZ_RESOURCE, AutozResourceClass))
-#define IS_AUTOZ_RESOURCE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_AUTOZ_RESOURCE))
-#define IS_AUTOZ_RESOURCE_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_AUTOZ_RESOURCE))
-#define AUTOZ_RESOURCE_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_AUTOZ_RESOURCE, AutozResourceClass))
+#define AUTOZ_TYPE_RESOURCE                 (autoz_resource_get_type ())
+#define AUTOZ_RESOURCE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_RESOURCE, AutozResource))
+#define AUTOZ_RESOURCE_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), AUTOZ_TYPE_RESOURCE, AutozResourceClass))
+#define AUTOZ_IS_RESOURCE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_RESOURCE))
+#define AUTOZ_IS_RESOURCE_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), AUTOZ_TYPE_RESOURCE))
+#define AUTOZ_RESOURCE_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), AUTOZ_TYPE_RESOURCE, AutozResourceClass))
 
 
 typedef struct _AutozResource AutozResource;
@@ -50,7 +50,7 @@ struct _AutozResourceClass
 GType autoz_resource_get_type (void) G_GNUC_CONST;
 
 
-AutozResource *autoz_resource_new (void);
+AutozResource *autoz_resource_new (const gchar *resource_id);
 
 
 G_END_DECLS

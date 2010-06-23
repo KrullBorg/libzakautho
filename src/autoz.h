@@ -26,6 +26,9 @@
 G_BEGIN_DECLS
 
 
+#include "role_interface.h"
+#include "resource_interface.h"
+
 #define TYPE_AUTOZ                 (autoz_get_type ())
 #define AUTOZ(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_AUTOZ, Autoz))
 #define AUTOZ_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_AUTOZ, AutozClass))
@@ -51,6 +54,14 @@ GType autoz_get_type (void) G_GNUC_CONST;
 
 
 Autoz *autoz_new (void);
+
+void autoz_add_role (Autoz *autoz, AutozIRole *irole);
+
+void autoz_add_resource (Autoz *autoz, AutozIResource *iresource);
+
+void autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
+
+gboolean autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
 
 
 G_END_DECLS
