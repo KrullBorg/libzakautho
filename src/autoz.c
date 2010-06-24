@@ -65,7 +65,7 @@ struct _AutozPrivate
 		GHashTable *roles;
 		GHashTable *resources;
 
-		GList *rules;
+		GHashTable *rules;
 	};
 
 G_DEFINE_TYPE (Autoz, autoz, G_TYPE_OBJECT)
@@ -89,7 +89,7 @@ autoz_init (Autoz *autoz)
 	priv->roles = g_hash_table_new (g_str_hash, g_str_equal);
 	priv->resources = g_hash_table_new (g_str_hash, g_str_equal);
 
-	priv->rules = NULL;
+	priv->rules = g_hash_table_new (g_str_hash, g_str_equal);
 }
 
 /**
@@ -175,7 +175,9 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	Role *role;
 	Resource *resource;
 
-	Rule r;
+	Rule *r;
+
+	gchar *str_id;
 
 	/* check if exists */
 	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
@@ -184,18 +186,28 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 			return;
 		}
 
+	/* TODO accept also NULL resource (equal to allow to every resource) */
 	resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
 	if (resource == NULL)
 		{
 			return;
 		}
 
-	r.role = role;
-	r.resource = resource;
+	r = (Rule *)g_malloc0 (sizeof (Rule));
+	r->role = role;
+	r->resource = resource;
 
-	priv->rules = g_list_append (priv->rules, g_memdup (&r, sizeof (Rule)));
+	str_id = g_strconcat (autoz_irole_get_role_id (r->role->irole),
+	                      "|",
+	                      autoz_iresource_get_resource_id (r->resource->iresource),
+	                      NULL);
+
+	if (g_hash_table_lookup (priv->rules, str_id) == NULL)
+		{
+			g_hash_table_insert (priv->rules, str_id, r);
+		}
 }
-
+	
 gboolean
 autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 {
@@ -204,8 +216,7 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	Role *role;
 	Resource *resource;
 
-	GList *rules;
-	Rule *r;
+	gchar *str_id;
 
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
@@ -222,21 +233,14 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 			return ret;
 		}
 
-	rules = g_list_first (priv->rules);
-	while (rules != NULL)
+	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+	                      "|",
+	                      autoz_iresource_get_resource_id (resource->iresource),
+	                      NULL);
+
+	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
 		{
-			r = (Rule *)rules->data;
-
-			if (g_strcmp0 (autoz_irole_get_role_id (role->irole), autoz_irole_get_role_id (r->role->irole)) == 0)
-				{
-					if (g_strcmp0 (autoz_iresource_get_resource_id (resource->iresource), autoz_iresource_get_resource_id (r->resource->iresource)) == 0)
-						{
-							ret = TRUE;
-							break;
-						}
-				}
-
-			rules = g_list_next (rules);
+			ret = TRUE;
 		}
 
 	return ret;

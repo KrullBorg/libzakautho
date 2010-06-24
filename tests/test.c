@@ -36,7 +36,7 @@ main (int argc, char **argv)
 	role_writer = autoz_role_new ("writer");
 	autoz_add_role (autoz, AUTOZ_IROLE (role_writer));
 
-	role_writer_child = autoz_role_new ("writer_child");
+	role_writer_child = autoz_role_new ("writer-child");
 	autoz_add_role_with_parents (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IROLE (role_writer), NULL);
 
 	role_read_only = autoz_role_new ("read-only");
@@ -47,14 +47,12 @@ main (int argc, char **argv)
 
 	autoz_allow (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource));
 
-	if (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource)))
-		{
-			g_message ("writer allowed to page.");
-		}
-	if (!autoz_is_allowed (autoz, AUTOZ_IROLE (role_read_only), AUTOZ_IRESOURCE (resource)))
-		{
-			g_message ("read-only not allowed to page.");
-		}
+	g_message ("writer %s allowed to page.",
+	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
+	g_message ("writer-child %s allowed to page.",
+	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
+	g_message ("read-only %s allowed to page.",
+	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_read_only), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
 
 	return 0;
 }
