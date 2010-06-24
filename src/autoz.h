@@ -56,6 +56,7 @@ GType autoz_get_type (void) G_GNUC_CONST;
 Autoz *autoz_new (void);
 
 void autoz_add_role (Autoz *autoz, AutozIRole *irole);
+void autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...);
 
 void autoz_add_resource (Autoz *autoz, AutozIResource *iresource);
 

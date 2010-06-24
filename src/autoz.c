@@ -20,13 +20,29 @@
 	#include <config.h>
 #endif
 
+#include <stdarg.h>
+
 #include "autoz.h"
+
+typedef struct _Role Role;
+struct _Role
+	{
+		AutozIRole *irole;
+		GList *parents;
+	};
+
+typedef struct _Resource Resource;
+struct _Resource
+	{
+		AutozIResource *iresource;
+		GList *parents;
+	};
 
 typedef struct _Rule Rule;
 struct _Rule
 	{
-		AutozIRole *irole;
-		AutozIResource *iresource;
+		Role *role;
+		Resource *resource;
 	};
 
 static void autoz_class_init (AutozClass *class);
@@ -91,6 +107,12 @@ Autoz
 void
 autoz_add_role (Autoz *autoz, AutozIRole *irole)
 {
+	autoz_add_role_with_parents (autoz, irole, NULL);
+}
+
+void
+autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
+{
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
 	const gchar *role_id;
@@ -99,7 +121,28 @@ autoz_add_role (Autoz *autoz, AutozIRole *irole)
 
 	if (g_hash_table_lookup (priv->roles, role_id) == NULL)
 		{
-			g_hash_table_insert (priv->roles, (gpointer)role_id, (gpointer)irole);
+			va_list args;
+			Role *role;
+
+			AutozIRole *irole_parent;
+			Role *role_parent;
+
+			role = (Role *)g_malloc0 (sizeof (Role));
+			role->irole = irole;
+			role->parents = NULL;
+
+			va_start (args, irole);
+			while ((irole_parent = va_arg (args, AutozIRole *)) != NULL)
+				{
+					role_parent = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole_parent));
+					if (role_parent != NULL)
+						{
+							role->parents = g_list_append (role->parents, role_parent);
+						}					
+				}
+			va_end (args);
+
+			g_hash_table_insert (priv->roles, (gpointer)role_id, (gpointer)role);
 		}
 }
 
@@ -114,7 +157,13 @@ autoz_add_resource (Autoz *autoz, AutozIResource *iresource)
 
 	if (g_hash_table_lookup (priv->resources, resource_id) == NULL)
 		{
-			g_hash_table_insert (priv->resources, (gpointer)resource_id, (gpointer)iresource);
+			Resource *resource;
+
+			resource = (Resource *)g_malloc0 (sizeof (Resource));
+			resource->iresource = iresource;
+			resource->parents = NULL;
+
+			g_hash_table_insert (priv->resources, (gpointer)resource_id, (gpointer)resource);
 		}
 }
 
@@ -123,25 +172,26 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 {
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
-	AutozIRole *real_irole;
-	AutozIResource *real_iresource;
+	Role *role;
+	Resource *resource;
 
 	Rule r;
 
 	/* check if exists */
-	real_irole = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
-	if (real_irole == NULL)
-		{
-			return;
-		}
-	real_iresource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
-	if (real_iresource == NULL)
+	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
+	if (role == NULL)
 		{
 			return;
 		}
 
-	r.irole = real_irole;
-	r.iresource = real_iresource;
+	resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+	if (resource == NULL)
+		{
+			return;
+		}
+
+	r.role = role;
+	r.resource = resource;
 
 	priv->rules = g_list_append (priv->rules, g_memdup (&r, sizeof (Rule)));
 }
@@ -151,8 +201,8 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 {
 	gboolean ret;
 
-	AutozIRole *real_irole;
-	AutozIResource *real_iresource;
+	Role *role;
+	Resource *resource;
 
 	GList *rules;
 	Rule *r;
@@ -161,13 +211,13 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 
 	ret = FALSE;
 
-	real_irole = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
-	if (real_irole == NULL)
+	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
+	if (role == NULL)
 		{
 			return ret;
 		}
-	real_iresource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
-	if (real_iresource == NULL)
+	resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+	if (resource == NULL)
 		{
 			return ret;
 		}
@@ -177,9 +227,9 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 		{
 			r = (Rule *)rules->data;
 
-			if (g_strcmp0 (autoz_irole_get_role_id (real_irole), autoz_irole_get_role_id (r->irole)) == 0)
+			if (g_strcmp0 (autoz_irole_get_role_id (role->irole), autoz_irole_get_role_id (r->role->irole)) == 0)
 				{
-					if (g_strcmp0 (autoz_iresource_get_resource_id (real_iresource), autoz_iresource_get_resource_id (r->iresource)) == 0)
+					if (g_strcmp0 (autoz_iresource_get_resource_id (resource->iresource), autoz_iresource_get_resource_id (r->resource->iresource)) == 0)
 						{
 							ret = TRUE;
 							break;

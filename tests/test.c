@@ -25,6 +25,7 @@ main (int argc, char **argv)
 {
 	Autoz *autoz;
 	AutozRole *role_writer;
+	AutozRole *role_writer_child;
 	AutozRole *role_read_only;
 	AutozResource *resource;
 
@@ -34,6 +35,9 @@ main (int argc, char **argv)
 
 	role_writer = autoz_role_new ("writer");
 	autoz_add_role (autoz, AUTOZ_IROLE (role_writer));
+
+	role_writer_child = autoz_role_new ("writer_child");
+	autoz_add_role_with_parents (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IROLE (role_writer), NULL);
 
 	role_read_only = autoz_role_new ("read-only");
 	autoz_add_role (autoz, AUTOZ_IROLE (role_read_only));
