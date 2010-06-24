@@ -28,14 +28,14 @@ typedef struct _Role Role;
 struct _Role
 	{
 		AutozIRole *irole;
-		GList *parents;
+		GList *parents; /* struct Role */
 	};
 
 typedef struct _Resource Resource;
 struct _Resource
 	{
 		AutozIResource *iresource;
-		GList *parents;
+		GList *parents; /* struct Resource */
 	};
 
 typedef struct _Rule Rule;
@@ -62,10 +62,10 @@ static void autoz_get_property (GObject *object,
 typedef struct _AutozPrivate AutozPrivate;
 struct _AutozPrivate
 	{
-		GHashTable *roles;
-		GHashTable *resources;
+		GHashTable *roles; /* struct Role */
+		GHashTable *resources; /* struct Resource */
 
-		GHashTable *rules;
+		GHashTable *rules; /* struct Rule */
 	};
 
 G_DEFINE_TYPE (Autoz, autoz, G_TYPE_OBJECT)
@@ -207,7 +207,48 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 			g_hash_table_insert (priv->rules, str_id, r);
 		}
 }
-	
+
+static gboolean
+_autoz_is_allowed (Autoz *autoz, Role *role, Resource *resource)
+{
+	gboolean ret;
+
+	gchar *str_id;
+
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = FALSE;
+
+	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+	                      "|",
+	                      autoz_iresource_get_resource_id (resource->iresource),
+	                      NULL);
+
+	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
+		{
+			ret = TRUE;
+		}
+	else if (role->parents != NULL)
+		{
+			/* trying parents */
+			GList *parents;
+
+			parents = g_list_first (role->parents);
+			while (parents != NULL)
+				{
+					if (_autoz_is_allowed (autoz, (Role *)parents->data, resource))
+						{
+							ret = TRUE;
+							break;		
+						}
+
+					parents = g_list_next (parents);
+				}
+		}
+
+	return ret;
+}
+
 gboolean
 autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 {
@@ -241,6 +282,23 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
 		{
 			ret = TRUE;
+		}
+	else if (role->parents != NULL)
+		{
+			/* trying parents */
+			GList *parents;
+
+			parents = g_list_first (role->parents);
+			while (parents != NULL)
+				{
+					if (_autoz_is_allowed (autoz, (Role *)parents->data, resource))
+						{
+							ret = TRUE;
+							break;		
+						}
+
+					parents = g_list_next (parents);
+				}
 		}
 
 	return ret;
