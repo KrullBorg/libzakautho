@@ -45,7 +45,7 @@ const gchar
 
 	if (iface->get_role_id)
 		{
-			ret = (* iface->get_role_id) (irole);
+			ret = (gchar *)(* iface->get_role_id) (irole);
 		}
 
 	return ret;

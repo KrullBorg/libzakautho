@@ -45,7 +45,7 @@ const gchar
 
 	if (iface->get_resource_id)
 		{
-			ret = (* iface->get_resource_id) (iresource);
+			ret = (gchar *)(* iface->get_resource_id) (iresource);
 		}
 
 	return ret;
