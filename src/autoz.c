@@ -117,6 +117,9 @@ autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 
 	const gchar *role_id;
 
+	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (AUTOZ_IS_IROLE (irole));
+
 	role_id = autoz_irole_get_role_id (irole);
 
 	if (g_hash_table_lookup (priv->roles, role_id) == NULL)
@@ -151,6 +154,9 @@ autoz_add_resource (Autoz *autoz, AutozIResource *iresource)
 {
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
+	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
+
 	const gchar *resource_id;
 
 	resource_id = autoz_iresource_get_resource_id (iresource);
@@ -167,10 +173,34 @@ autoz_add_resource (Autoz *autoz, AutozIResource *iresource)
 		}
 }
 
+AutozIRole
+*autoz_get_role_from_id (Autoz *autoz, const gchar *role_id)
+{
+	AutozPrivate *priv;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	return g_hash_table_lookup (priv->roles, role_id);
+}
+
+AutozIResource
+*autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id)
+{
+	AutozPrivate *priv;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	return g_hash_table_lookup (priv->resources, resource_id);
+}
+
 void
 autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 {
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	AutozPrivate *priv;
 
 	Role *role;
 	Resource *resource;
@@ -178,6 +208,11 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	Rule *r;
 
 	gchar *str_id;
+
+	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
 
 	/* check if exists */
 	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
@@ -259,8 +294,13 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 
 	gchar *str_id;
 
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	AutozPrivate *priv;
 
+	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (AUTOZ_IS_IROLE (irole), FALSE);
+	g_return_val_if_fail (AUTOZ_IS_IRESOURCE (iresource), FALSE);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
 	ret = FALSE;
 
 	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));

@@ -58,6 +58,9 @@ Autoz *autoz_new (void);
 void autoz_add_role (Autoz *autoz, AutozIRole *irole);
 void autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...);
 
+AutozIRole *autoz_get_role_from_id (Autoz *autoz, const gchar *role_id);
+AutozIResource *autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id);
+
 void autoz_add_resource (Autoz *autoz, AutozIResource *iresource);
 
 void autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
