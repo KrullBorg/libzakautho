@@ -267,7 +267,6 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	gchar *str_id;
 
 	g_return_if_fail (IS_AUTOZ (autoz));
-	g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
 
 	priv = AUTOZ_GET_PRIVATE (autoz);
 
@@ -278,11 +277,20 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 			return;
 		}
 
-	/* TODO accept also NULL resource (equal to allow to every resource) */
-	resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
-	if (resource == NULL)
+	/* accept also NULL resource (equal to allow every resource) */
+	if (iresource == NULL)
 		{
-			return;
+			resource = NULL;
+		}
+	else
+		{
+			g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
+
+			resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+			if (resource == NULL)
+				{
+					return;
+				}
 		}
 
 	r = (Rule *)g_malloc0 (sizeof (Rule));
@@ -291,7 +299,7 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 
 	str_id = g_strconcat (autoz_irole_get_role_id (r->role->irole),
 	                      "|",
-	                      autoz_iresource_get_resource_id (r->resource->iresource),
+	                      (resource == NULL ? "NULL" : autoz_iresource_get_resource_id (r->resource->iresource)),
 	                      NULL);
 
 	if (g_hash_table_lookup (priv->rules, str_id) == NULL)
@@ -311,11 +319,22 @@ _autoz_is_allowed (Autoz *autoz, Role *role, Resource *resource)
 
 	ret = FALSE;
 
+	/* first trying for a rule for every resource */
+	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+	                      "|NULL",
+	                      NULL);
+
+	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
+		{
+			ret = TRUE;
+		}
+
 	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
 	                      "|",
 	                      autoz_iresource_get_resource_id (resource->iresource),
 	                      NULL);
 
+	/* and after for specific resource */
 	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
 		{
 			ret = TRUE;
@@ -371,6 +390,17 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 			return ret;
 		}
 
+	/* first trying for a rule for every resource */
+	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+	                      "|NULL",
+	                      NULL);
+
+	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
+		{
+			ret = TRUE;
+		}
+
+	/* and after for specific resource */
 	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
 	                      "|",
 	                      autoz_iresource_get_resource_id (resource->iresource),

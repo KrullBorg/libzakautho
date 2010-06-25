@@ -33,6 +33,12 @@ main (int argc, char **argv)
 
 	autoz = autoz_new ();
 
+	autoz_add_role (autoz, AUTOZ_IROLE (autoz_role_new ("super-admin")));
+
+	autoz_allow (autoz,
+		autoz_get_role_from_id (autoz, "super-admin"),
+		NULL);
+
 	role_writer = autoz_role_new ("writer");
 	autoz_add_role (autoz, AUTOZ_IROLE (role_writer));
 
@@ -54,6 +60,8 @@ main (int argc, char **argv)
 
 	autoz_allow (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource));
 
+	g_message ("super-admin %s allowed to page.",
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
 	g_message ("writer %s allowed to page.",
 	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to page.",
