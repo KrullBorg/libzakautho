@@ -48,6 +48,9 @@ struct _Rule
 static void autoz_class_init (AutozClass *class);
 static void autoz_init (Autoz *autoz);
 
+static gboolean _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource);
+static gboolean _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource);
+
 static void autoz_set_property (GObject *object,
                                guint property_id,
                                const GValue *value,
@@ -309,7 +312,7 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 }
 
 static gboolean
-_autoz_is_allowed (Autoz *autoz, Role *role, Resource *resource)
+_autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource)
 {
 	gboolean ret;
 
@@ -329,17 +332,36 @@ _autoz_is_allowed (Autoz *autoz, Role *role, Resource *resource)
 			ret = TRUE;
 		}
 
+	/* and after for specific resource */
 	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
 	                      "|",
 	                      autoz_iresource_get_resource_id (resource->iresource),
 	                      NULL);
 
-	/* and after for specific resource */
 	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
 		{
 			ret = TRUE;
 		}
-	else if (role->parents != NULL)
+
+	if (!ret && resource->parents != NULL)
+		{
+			/* trying parents */
+			GList *parents;
+
+			parents = g_list_first (resource->parents);
+			while (parents != NULL)
+				{
+					if (_autoz_is_allowed_resource (autoz, role, (Resource *)parents->data))
+						{
+							ret = TRUE;
+							break;		
+						}
+
+					parents = g_list_next (parents);
+				}
+		}
+
+	if (!ret && role->parents != NULL)
 		{
 			/* trying parents */
 			GList *parents;
@@ -347,7 +369,48 @@ _autoz_is_allowed (Autoz *autoz, Role *role, Resource *resource)
 			parents = g_list_first (role->parents);
 			while (parents != NULL)
 				{
-					if (_autoz_is_allowed (autoz, (Role *)parents->data, resource))
+					if (_autoz_is_allowed_role (autoz, (Role *)parents->data, resource))
+						{
+							ret = TRUE;
+							break;		
+						}
+
+					parents = g_list_next (parents);
+				}
+		}
+
+	return ret;
+}
+
+static gboolean
+_autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource)
+{
+	gboolean ret;
+
+	gchar *str_id;
+
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = FALSE;
+
+	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+	                      "|",
+	                      autoz_iresource_get_resource_id (resource->iresource),
+	                      NULL);
+
+	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
+		{
+			ret = TRUE;
+		}
+	else if (resource->parents != NULL)
+		{
+			/* trying parents */
+			GList *parents;
+
+			parents = g_list_first (resource->parents);
+			while (parents != NULL)
+				{
+					if (_autoz_is_allowed_resource (autoz, role, (Resource *)parents->data))
 						{
 							ret = TRUE;
 							break;		
@@ -410,7 +473,26 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 		{
 			ret = TRUE;
 		}
-	else if (role->parents != NULL)
+
+	if (!ret && resource->parents != NULL)
+		{
+			/* trying parents */
+			GList *parents;
+
+			parents = g_list_first (resource->parents);
+			while (parents != NULL)
+				{
+					if (_autoz_is_allowed_resource (autoz, role, (Resource *)parents->data))
+						{
+							ret = TRUE;
+							break;		
+						}
+
+					parents = g_list_next (parents);
+				}
+		}
+
+	if (!ret && role->parents != NULL)
 		{
 			/* trying parents */
 			GList *parents;
@@ -418,7 +500,7 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 			parents = g_list_first (role->parents);
 			while (parents != NULL)
 				{
-					if (_autoz_is_allowed (autoz, (Role *)parents->data, resource))
+					if (_autoz_is_allowed_role (autoz, (Role *)parents->data, resource))
 						{
 							ret = TRUE;
 							break;		

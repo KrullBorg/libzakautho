@@ -66,6 +66,8 @@ main (int argc, char **argv)
 	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to page.",
 	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
+	g_message ("writer-child %s allowed to paragraph.",
+	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph"))) ? "is" : "isn't"));
 	g_message ("read-only %s allowed to page.",
 	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_read_only), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
 
