@@ -47,6 +47,11 @@ main (int argc, char **argv)
 	resource = autoz_resource_new ("page");
 	autoz_add_resource (autoz, AUTOZ_IRESOURCE (resource));
 
+	autoz_add_resource_with_parents (autoz,
+		AUTOZ_IRESOURCE (autoz_resource_new ("paragraph")),
+		autoz_get_resource_from_id (autoz, "page"),
+		NULL);
+
 	autoz_allow (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource));
 
 	g_message ("writer %s allowed to page.",

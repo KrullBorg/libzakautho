@@ -149,6 +149,27 @@ autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 		}
 }
 
+AutozIRole
+*autoz_get_role_from_id (Autoz *autoz, const gchar *role_id)
+{
+	AutozPrivate *priv;
+	Role *role;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	role = g_hash_table_lookup (priv->roles, role_id);
+	if (role == NULL)
+		{
+			return NULL;
+		}
+	else
+		{
+			return role->irole;
+		}
+}
+
 void
 autoz_add_resource (Autoz *autoz, AutozIResource *iresource)
 {
@@ -173,28 +194,64 @@ autoz_add_resource (Autoz *autoz, AutozIResource *iresource)
 		}
 }
 
-AutozIRole
-*autoz_get_role_from_id (Autoz *autoz, const gchar *role_id)
+void
+autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...)
 {
-	AutozPrivate *priv;
+	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+	const gchar *resource_id;
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
 
-	return g_hash_table_lookup (priv->roles, role_id);
+	resource_id = autoz_iresource_get_resource_id (iresource);
+
+	if (g_hash_table_lookup (priv->resources, resource_id) == NULL)
+		{
+			va_list args;
+			Resource *resource;
+
+			AutozIResource *iresource_parent;
+			Resource *resource_parent;
+
+			resource = (Resource *)g_malloc0 (sizeof (Resource));
+			resource->iresource = iresource;
+			resource->parents = NULL;
+
+			va_start (args, iresource);
+			while ((iresource_parent = va_arg (args, AutozIResource *)) != NULL)
+				{
+					resource_parent = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource_parent));
+					if (resource_parent != NULL)
+						{
+							resource->parents = g_list_append (resource->parents, resource_parent);
+						}					
+				}
+			va_end (args);
+
+			g_hash_table_insert (priv->resources, (gpointer)resource_id, (gpointer)resource);
+		}
 }
 
 AutozIResource
 *autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id)
 {
 	AutozPrivate *priv;
+	Resource *resource;
 
 	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
 
 	priv = AUTOZ_GET_PRIVATE (autoz);
 
-	return g_hash_table_lookup (priv->resources, resource_id);
+	resource = g_hash_table_lookup (priv->resources, resource_id);
+	if (resource == NULL)
+		{
+			return NULL;
+		}
+	else
+		{
+			return resource->iresource;
+		}
 }
 
 void
