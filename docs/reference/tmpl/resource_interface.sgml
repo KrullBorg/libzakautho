@@ -1,0 +1,47 @@
+<!-- ##### SECTION Title ##### -->
+AutozIResource
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT AutozIResource ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT AutozIResourceIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@get_resource_id: 
+
+<!-- ##### FUNCTION autoz_iresource_get_resource_id ##### -->
+<para>
+
+</para>
+
+@iresource: 
+@Returns: 
+
+

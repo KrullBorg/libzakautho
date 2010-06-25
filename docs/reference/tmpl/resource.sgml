@@ -1,0 +1,46 @@
+<!-- ##### SECTION Title ##### -->
+AutozResource
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT AutozResource ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT AutozResourceClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION autoz_resource_new ##### -->
+<para>
+
+</para>
+
+@resource_id: 
+@Returns: 
+
+

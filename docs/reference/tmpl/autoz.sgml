@@ -1,0 +1,181 @@
+<!-- ##### SECTION Title ##### -->
+Autoz
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO TYPE_AUTOZ ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO AUTOZ ##### -->
+<para>
+
+</para>
+
+@obj: 
+
+
+<!-- ##### MACRO AUTOZ_CLASS ##### -->
+<para>
+
+</para>
+
+@klass: 
+
+
+<!-- ##### MACRO IS_AUTOZ ##### -->
+<para>
+
+</para>
+
+@obj: 
+
+
+<!-- ##### MACRO IS_AUTOZ_CLASS ##### -->
+<para>
+
+</para>
+
+@klass: 
+
+
+<!-- ##### MACRO AUTOZ_GET_CLASS ##### -->
+<para>
+
+</para>
+
+@obj: 
+
+
+<!-- ##### STRUCT Autoz ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT AutozClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION autoz_get_type ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION autoz_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION autoz_add_role ##### -->
+<para>
+
+</para>
+
+@autoz: 
+@irole: 
+
+
+<!-- ##### FUNCTION autoz_add_role_with_parents ##### -->
+<para>
+
+</para>
+
+@autoz: 
+@irole: 
+@Varargs: 
+
+
+<!-- ##### FUNCTION autoz_get_role_from_id ##### -->
+<para>
+
+</para>
+
+@autoz: 
+@role_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION autoz_add_resource ##### -->
+<para>
+
+</para>
+
+@autoz: 
+@iresource: 
+
+
+<!-- ##### FUNCTION autoz_add_resource_with_parents ##### -->
+<para>
+
+</para>
+
+@autoz: 
+@iresource: 
+@Varargs: 
+
+
+<!-- ##### FUNCTION autoz_get_resource_from_id ##### -->
+<para>
+
+</para>
+
+@autoz: 
+@resource_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION autoz_allow ##### -->
+<para>
+
+</para>
+
+@autoz: 
+@irole: 
+@iresource: 
+
+
+<!-- ##### FUNCTION autoz_is_allowed ##### -->
+<para>
+
+</para>
+
+@autoz: 
+@irole: 
+@iresource: 
+@Returns: 
+
+

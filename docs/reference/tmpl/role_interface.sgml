@@ -1,0 +1,47 @@
+<!-- ##### SECTION Title ##### -->
+AutozIRole
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT AutozIRole ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT AutozIRoleIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@get_role_id: 
+
+<!-- ##### FUNCTION autoz_irole_get_role_id ##### -->
+<para>
+
+</para>
+
+@irole: 
+@Returns: 
+
+

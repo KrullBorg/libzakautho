@@ -1,0 +1,8 @@
+GObject
+  Autoz
+  AutozResource
+  AutozRole
+GInterface
+  GTypePlugin
+  AutozIResource
+  AutozIRole

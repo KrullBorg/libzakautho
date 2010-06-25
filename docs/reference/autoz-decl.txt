@@ -1,0 +1,284 @@
+<MACRO>
+<NAME>TYPE_AUTOZ</NAME>
+#define TYPE_AUTOZ                 (autoz_get_type ())
+</MACRO>
+<MACRO>
+<NAME>AUTOZ</NAME>
+#define AUTOZ(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_AUTOZ, Autoz))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_CLASS</NAME>
+#define AUTOZ_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_AUTOZ, AutozClass))
+</MACRO>
+<MACRO>
+<NAME>IS_AUTOZ</NAME>
+#define IS_AUTOZ(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_AUTOZ))
+</MACRO>
+<MACRO>
+<NAME>IS_AUTOZ_CLASS</NAME>
+#define IS_AUTOZ_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_AUTOZ))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_GET_CLASS</NAME>
+#define AUTOZ_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_AUTOZ, AutozClass))
+</MACRO>
+<STRUCT>
+<NAME>Autoz</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozClass</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>Autoz</NAME>
+struct _Autoz
+	{
+		GObject parent;
+	};
+</STRUCT>
+<STRUCT>
+<NAME>AutozClass</NAME>
+struct _AutozClass
+	{
+		GObjectClass parent_class;
+	};
+</STRUCT>
+<FUNCTION>
+<NAME>autoz_get_type</NAME>
+<RETURNS>GType </RETURNS>
+void 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_new</NAME>
+<RETURNS>Autoz *</RETURNS>
+void 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_add_role</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIRole *irole 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_add_role_with_parents</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIRole *irole, ... 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_get_role_from_id</NAME>
+<RETURNS>AutozIRole *</RETURNS>
+Autoz *autoz, const gchar *role_id 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_add_resource</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIResource *iresource 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_add_resource_with_parents</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIResource *iresource, ... 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_get_resource_from_id</NAME>
+<RETURNS>AutozIResource *</RETURNS>
+Autoz *autoz, const gchar *resource_id 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_allow</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIRole *irole, AutozIResource *iresource 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_is_allowed</NAME>
+<RETURNS>gboolean </RETURNS>
+Autoz *autoz, AutozIRole *irole, AutozIResource *iresource 
+</FUNCTION>
+<MACRO>
+<NAME>AUTOZ_TYPE_ROLE</NAME>
+#define AUTOZ_TYPE_ROLE                 (autoz_role_get_type ())
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_ROLE</NAME>
+#define AUTOZ_ROLE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_ROLE, AutozRole))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_ROLE_CLASS</NAME>
+#define AUTOZ_ROLE_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), AUTOZ_TYPE_ROLE, AutozRoleClass))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IS_ROLE</NAME>
+#define AUTOZ_IS_ROLE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_ROLE))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IS_ROLE_CLASS</NAME>
+#define AUTOZ_IS_ROLE_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), AUTOZ_TYPE_ROLE))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_ROLE_GET_CLASS</NAME>
+#define AUTOZ_ROLE_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), AUTOZ_TYPE_ROLE, AutozRoleClass))
+</MACRO>
+<STRUCT>
+<NAME>AutozRole</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozRoleClass</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozRole</NAME>
+struct _AutozRole
+	{
+		GObject parent;
+	};
+</STRUCT>
+<STRUCT>
+<NAME>AutozRoleClass</NAME>
+struct _AutozRoleClass
+	{
+		GObjectClass parent_class;
+	};
+</STRUCT>
+<FUNCTION>
+<NAME>autoz_role_get_type</NAME>
+<RETURNS>GType </RETURNS>
+void 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_role_new</NAME>
+<RETURNS>AutozRole *</RETURNS>
+const gchar *role_id 
+</FUNCTION>
+<MACRO>
+<NAME>AUTOZ_TYPE_IRESOURCE</NAME>
+#define AUTOZ_TYPE_IRESOURCE             (autoz_iresource_get_type ())
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IRESOURCE</NAME>
+#define AUTOZ_IRESOURCE(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_IRESOURCE, AutozIResource))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IS_IRESOURCE</NAME>
+#define AUTOZ_IS_IRESOURCE(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_IRESOURCE))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IRESOURCE_GET_IFACE</NAME>
+#define AUTOZ_IRESOURCE_GET_IFACE(obj)   (G_TYPE_INSTANCE_GET_INTERFACE ((obj), AUTOZ_TYPE_IRESOURCE, AutozIResourceIface))
+</MACRO>
+<STRUCT>
+<NAME>AutozIResource</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozIResourceIface</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozIResourceIface</NAME>
+struct _AutozIResourceIface
+	{
+		GTypeInterface g_iface;
+
+		const gchar *(*get_resource_id) (AutozIResource *iresource);
+	};
+</STRUCT>
+<FUNCTION>
+<NAME>autoz_iresource_get_type</NAME>
+<RETURNS>GType </RETURNS>
+void 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_iresource_get_resource_id</NAME>
+<RETURNS>const gchar *</RETURNS>
+AutozIResource *iresource 
+</FUNCTION>
+<MACRO>
+<NAME>AUTOZ_TYPE_IROLE</NAME>
+#define AUTOZ_TYPE_IROLE             (autoz_irole_get_type ())
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IROLE</NAME>
+#define AUTOZ_IROLE(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_IROLE, AutozIRole))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IS_IROLE</NAME>
+#define AUTOZ_IS_IROLE(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_IROLE))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IROLE_GET_IFACE</NAME>
+#define AUTOZ_IROLE_GET_IFACE(obj)   (G_TYPE_INSTANCE_GET_INTERFACE ((obj), AUTOZ_TYPE_IROLE, AutozIRoleIface))
+</MACRO>
+<STRUCT>
+<NAME>AutozIRole</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozIRoleIface</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozIRoleIface</NAME>
+struct _AutozIRoleIface
+	{
+		GTypeInterface g_iface;
+
+		const gchar *(*get_role_id) (AutozIRole *irole);
+	};
+</STRUCT>
+<FUNCTION>
+<NAME>autoz_irole_get_type</NAME>
+<RETURNS>GType </RETURNS>
+void 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_irole_get_role_id</NAME>
+<RETURNS>const gchar *</RETURNS>
+AutozIRole *irole 
+</FUNCTION>
+<MACRO>
+<NAME>AUTOZ_TYPE_RESOURCE</NAME>
+#define AUTOZ_TYPE_RESOURCE                 (autoz_resource_get_type ())
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_RESOURCE</NAME>
+#define AUTOZ_RESOURCE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_RESOURCE, AutozResource))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_RESOURCE_CLASS</NAME>
+#define AUTOZ_RESOURCE_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), AUTOZ_TYPE_RESOURCE, AutozResourceClass))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IS_RESOURCE</NAME>
+#define AUTOZ_IS_RESOURCE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_RESOURCE))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IS_RESOURCE_CLASS</NAME>
+#define AUTOZ_IS_RESOURCE_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), AUTOZ_TYPE_RESOURCE))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_RESOURCE_GET_CLASS</NAME>
+#define AUTOZ_RESOURCE_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), AUTOZ_TYPE_RESOURCE, AutozResourceClass))
+</MACRO>
+<STRUCT>
+<NAME>AutozResource</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozResourceClass</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozResource</NAME>
+struct _AutozResource
+	{
+		GObject parent;
+	};
+</STRUCT>
+<STRUCT>
+<NAME>AutozResourceClass</NAME>
+struct _AutozResourceClass
+	{
+		GObjectClass parent_class;
+	};
+</STRUCT>
+<FUNCTION>
+<NAME>autoz_resource_get_type</NAME>
+<RETURNS>GType </RETURNS>
+void 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_resource_new</NAME>
+<RETURNS>AutozResource *</RETURNS>
+const gchar *resource_id 
+</FUNCTION>
