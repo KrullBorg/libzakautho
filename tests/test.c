@@ -29,7 +29,7 @@ main (int argc, char **argv)
 	AutozRole *role_writer;
 	AutozRole *role_writer_child;
 	AutozRole *role_read_only;
-	AutozResource *resource;
+	AutozResource *resource_page;
 
 	xmlDocPtr xdoc;
 	xmlNodePtr xnode;
@@ -55,15 +55,17 @@ main (int argc, char **argv)
 	role_read_only = autoz_role_new ("read-only");
 	autoz_add_role (autoz, AUTOZ_IROLE (role_read_only));
 
-	resource = autoz_resource_new ("page");
-	autoz_add_resource (autoz, AUTOZ_IRESOURCE (resource));
+	resource_page = autoz_resource_new ("page");
+	autoz_add_resource (autoz, AUTOZ_IRESOURCE (resource_page));
 
 	autoz_add_resource_with_parents (autoz,
 		AUTOZ_IRESOURCE (autoz_resource_new ("paragraph")),
 		autoz_get_resource_from_id (autoz, "page"),
 		NULL);
 
-	autoz_allow (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource));
+	autoz_allow (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource_page));
+
+	autoz_deny (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph")));
 
 	/* get xml */
 	xnode = autoz_get_xml (autoz);
@@ -77,15 +79,21 @@ main (int argc, char **argv)
 		}
 
 	g_message ("super-admin %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), AUTOZ_IRESOURCE (resource_page)) ? "is" : "isn't"));
+	g_message ("super-admin %s allowed to paragraph.",
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph"))) ? "is" : "isn't"));
 	g_message ("writer %s allowed to page.",
-	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource_page)) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to page.",
-	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (resource_page)) ? "is" : "isn't"));
+	g_message ("writer %s allowed to paragraph.",
+	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph"))) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to paragraph.",
 	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph"))) ? "is" : "isn't"));
 	g_message ("read-only %s allowed to page.",
-	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_read_only), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_read_only), AUTOZ_IRESOURCE (resource_page)) ? "is" : "isn't"));
+	g_message ("read-only %s allowed to paragraph.",
+	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_read_only), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph"))) ? "is" : "isn't"));
 
 	return 0;
 }

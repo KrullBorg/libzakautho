@@ -45,11 +45,18 @@ struct _Rule
 		Resource *resource;
 	};
 
+typedef enum AutozIsAllowed
+	{
+		AUTOZ_ALLOWED,
+		AUTOZ_DENIED,
+		AUTOZ_NOT_FOUND
+	} AutozIsAllowed;
+
 static void autoz_class_init (AutozClass *class);
 static void autoz_init (Autoz *autoz);
 
-static gboolean _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource);
-static gboolean _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource);
+static AutozIsAllowed _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource);
+static AutozIsAllowed _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource);
 
 static void autoz_set_property (GObject *object,
                                guint property_id,
@@ -68,7 +75,8 @@ struct _AutozPrivate
 		GHashTable *roles; /* struct Role */
 		GHashTable *resources; /* struct Resource */
 
-		GHashTable *rules; /* struct Rule */
+		GHashTable *rules_allow; /* struct Rule */
+		GHashTable *rules_deny; /* struct Rule */
 	};
 
 G_DEFINE_TYPE (Autoz, autoz, G_TYPE_OBJECT)
@@ -92,7 +100,8 @@ autoz_init (Autoz *autoz)
 	priv->roles = g_hash_table_new (g_str_hash, g_str_equal);
 	priv->resources = g_hash_table_new (g_str_hash, g_str_equal);
 
-	priv->rules = g_hash_table_new (g_str_hash, g_str_equal);
+	priv->rules_allow = g_hash_table_new (g_str_hash, g_str_equal);
+	priv->rules_deny = g_hash_table_new (g_str_hash, g_str_equal);
 }
 
 /**
@@ -277,10 +286,66 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
 	if (role == NULL)
 		{
+			g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole));
 			return;
 		}
 
 	/* accept also NULL resource (equal to allow every resource) */
+	if (iresource == NULL)
+		{
+			resource = NULL;
+		}
+	else
+		{
+			g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
+
+			resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+			if (resource == NULL)
+				{
+					g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource));
+					return;
+				}
+		}
+
+	r = (Rule *)g_malloc0 (sizeof (Rule));
+	r->role = role;
+	r->resource = resource;
+
+	str_id = g_strconcat (autoz_irole_get_role_id (r->role->irole),
+	                      "|",
+	                      (resource == NULL ? "NULL" : autoz_iresource_get_resource_id (r->resource->iresource)),
+	                      NULL);
+
+	if (g_hash_table_lookup (priv->rules_allow, str_id) == NULL)
+		{
+			g_hash_table_insert (priv->rules_allow, str_id, r);
+		}
+}
+
+void
+autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
+{
+	AutozPrivate *priv;
+
+	Role *role;
+	Resource *resource;
+
+	Rule *r;
+
+	gchar *str_id;
+
+	g_return_if_fail (IS_AUTOZ (autoz));
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	/* check if exists */
+	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
+	if (role == NULL)
+		{
+			return;
+		}
+
+	/* accept also NULL resource (equal to deny every resource) */
 	if (iresource == NULL)
 		{
 			resource = NULL;
@@ -305,31 +370,37 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	                      (resource == NULL ? "NULL" : autoz_iresource_get_resource_id (r->resource->iresource)),
 	                      NULL);
 
-	if (g_hash_table_lookup (priv->rules, str_id) == NULL)
+	if (g_hash_table_lookup (priv->rules_deny, str_id) == NULL)
 		{
-			g_hash_table_insert (priv->rules, str_id, r);
+			g_hash_table_insert (priv->rules_deny, str_id, r);
 		}
 }
 
-static gboolean
+static AutozIsAllowed
 _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource)
 {
-	gboolean ret;
+	AutozIsAllowed ret;
 
 	gchar *str_id;
 
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
-	ret = FALSE;
+	ret = AUTOZ_NOT_FOUND;
 
 	/* first trying for a rule for every resource */
 	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
 	                      "|NULL",
 	                      NULL);
 
-	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
+	if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
 		{
-			ret = TRUE;
+			ret = AUTOZ_DENIED;
+			return ret;
+		}
+	if (g_hash_table_lookup (priv->rules_allow, str_id) != NULL)
+		{
+			ret = AUTOZ_ALLOWED;
+			return ret;
 		}
 
 	/* and after for specific resource */
@@ -338,12 +409,18 @@ _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource)
 	                      autoz_iresource_get_resource_id (resource->iresource),
 	                      NULL);
 
-	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
+	if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
 		{
-			ret = TRUE;
+			ret = AUTOZ_DENIED;
+			return ret;
+		}
+	if (g_hash_table_lookup (priv->rules_allow, str_id) != NULL)
+		{
+			ret = AUTOZ_ALLOWED;
+			return ret;
 		}
 
-	if (!ret && resource->parents != NULL)
+	if (ret == AUTOZ_NOT_FOUND && resource->parents != NULL)
 		{
 			/* trying parents */
 			GList *parents;
@@ -351,17 +428,17 @@ _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource)
 			parents = g_list_first (resource->parents);
 			while (parents != NULL)
 				{
-					if (_autoz_is_allowed_resource (autoz, role, (Resource *)parents->data))
-						{
-							ret = TRUE;
-							break;		
-						}
+					ret = _autoz_is_allowed_resource (autoz, role, (Resource *)parents->data);
+					if (ret != AUTOZ_NOT_FOUND)
+						 {
+						 	break;
+						 }
 
 					parents = g_list_next (parents);
 				}
 		}
 
-	if (!ret && role->parents != NULL)
+	if (ret == AUTOZ_NOT_FOUND && role->parents != NULL)
 		{
 			/* trying parents */
 			GList *parents;
@@ -369,11 +446,11 @@ _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource)
 			parents = g_list_first (role->parents);
 			while (parents != NULL)
 				{
-					if (_autoz_is_allowed_role (autoz, (Role *)parents->data, resource))
-						{
-							ret = TRUE;
-							break;		
-						}
+					ret = _autoz_is_allowed_role (autoz, (Role *)parents->data, resource);
+					if (ret != AUTOZ_NOT_FOUND)
+						 {
+						 	break;
+						 }
 
 					parents = g_list_next (parents);
 				}
@@ -382,25 +459,31 @@ _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource)
 	return ret;
 }
 
-static gboolean
+static AutozIsAllowed
 _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource)
 {
-	gboolean ret;
+	AutozIsAllowed ret;
 
 	gchar *str_id;
 
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
-	ret = FALSE;
+	ret = AUTOZ_NOT_FOUND;
 
 	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
 	                      "|",
 	                      autoz_iresource_get_resource_id (resource->iresource),
 	                      NULL);
 
-	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
+	if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
 		{
-			ret = TRUE;
+			ret = AUTOZ_DENIED;
+			return ret;
+		}
+	else if (g_hash_table_lookup (priv->rules_allow, str_id) != NULL)
+		{
+			ret = AUTOZ_ALLOWED;
+			return ret;
 		}
 	else if (resource->parents != NULL)
 		{
@@ -410,10 +493,10 @@ _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource)
 			parents = g_list_first (resource->parents);
 			while (parents != NULL)
 				{
-					if (_autoz_is_allowed_resource (autoz, role, (Resource *)parents->data))
-						{
-							ret = TRUE;
-							break;		
+					ret = _autoz_is_allowed_resource (autoz, role, (Resource *)parents->data);
+					if (ret != AUTOZ_NOT_FOUND)
+						 {
+							break;
 						}
 
 					parents = g_list_next (parents);
@@ -427,6 +510,7 @@ gboolean
 autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 {
 	gboolean ret;
+	AutozIsAllowed isAllowed;
 
 	Role *role;
 	Resource *resource;
@@ -441,15 +525,18 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 
 	priv = AUTOZ_GET_PRIVATE (autoz);
 	ret = FALSE;
+	isAllowed = AUTOZ_NOT_FOUND;
 
 	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
 	if (role == NULL)
 		{
+			g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole));
 			return ret;
 		}
 	resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
 	if (resource == NULL)
 		{
+			g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource));
 			return ret;
 		}
 
@@ -458,9 +545,15 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	                      "|NULL",
 	                      NULL);
 
-	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
+	if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
+		{
+			ret = FALSE;
+			return ret;
+		}
+	if (g_hash_table_lookup (priv->rules_allow, str_id) != NULL)
 		{
 			ret = TRUE;
+			return ret;
 		}
 
 	/* and after for specific resource */
@@ -469,9 +562,15 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	                      autoz_iresource_get_resource_id (resource->iresource),
 	                      NULL);
 
-	if (g_hash_table_lookup (priv->rules, str_id) != NULL)
+	if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
+		{
+			ret = FALSE;
+			return ret;
+		}
+	if (g_hash_table_lookup (priv->rules_allow, str_id) != NULL)
 		{
 			ret = TRUE;
+			return ret;
 		}
 
 	if (!ret && resource->parents != NULL)
@@ -482,17 +581,23 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 			parents = g_list_first (resource->parents);
 			while (parents != NULL)
 				{
-					if (_autoz_is_allowed_resource (autoz, role, (Resource *)parents->data))
+					isAllowed = _autoz_is_allowed_resource (autoz, role, (Resource *)parents->data);
+					if (isAllowed == AUTOZ_DENIED)
+						 {
+						 	ret = FALSE;
+						 	break;
+						 }
+					else if (isAllowed == AUTOZ_ALLOWED)
 						{
 							ret = TRUE;
-							break;		
+							break;
 						}
 
 					parents = g_list_next (parents);
 				}
 		}
 
-	if (!ret && role->parents != NULL)
+	if (!ret && isAllowed == AUTOZ_NOT_FOUND && role->parents != NULL)
 		{
 			/* trying parents */
 			GList *parents;
@@ -500,10 +605,16 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 			parents = g_list_first (role->parents);
 			while (parents != NULL)
 				{
-					if (_autoz_is_allowed_role (autoz, (Role *)parents->data, resource))
+					isAllowed = _autoz_is_allowed_role (autoz, (Role *)parents->data, resource);
+					if (isAllowed == AUTOZ_DENIED)
+						 {
+						 	ret = FALSE;
+						 	break;
+						 }
+					else if (isAllowed == AUTOZ_ALLOWED)
 						{
 							ret = TRUE;
-							break;		
+							break;
 						}
 
 					parents = g_list_next (parents);
@@ -586,11 +697,35 @@ autoz_get_xml (Autoz *autoz)
 				}
 		}
 
-	/* rules */
-	g_hash_table_iter_init (&iter, priv->rules);
+	/* rules allow */
+	g_hash_table_iter_init (&iter, priv->rules_allow);
 	while (g_hash_table_iter_next (&iter, &key, &value)) 
 		{
 			xnode = xmlNewNode (NULL, "rule");
+
+			xmlSetProp (xnode, "allow", "yes");
+
+			rule = (Rule *)value;
+			xmlSetProp (xnode, "role", autoz_irole_get_role_id (AUTOZ_IROLE (rule->role->irole)));
+			if (rule->resource != NULL)
+				{
+					xmlSetProp (xnode, "resource", autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (rule->resource->iresource)));
+				}
+			else
+				{
+					xmlSetProp (xnode, "resource", "all");
+				}
+
+			xmlAddChild (ret, xnode);
+		}
+
+	/* rules deny */
+	g_hash_table_iter_init (&iter, priv->rules_deny);
+	while (g_hash_table_iter_next (&iter, &key, &value)) 
+		{
+			xnode = xmlNewNode (NULL, "rule");
+
+			xmlSetProp (xnode, "allow", "no");
 
 			rule = (Rule *)value;
 			xmlSetProp (xnode, "role", autoz_irole_get_role_id (AUTOZ_IROLE (rule->role->irole)));

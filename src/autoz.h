@@ -68,6 +68,7 @@ void autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, .
 AutozIResource *autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id);
 
 void autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
+void autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
 
 gboolean autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
 
