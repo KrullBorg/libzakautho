@@ -22,6 +22,8 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#include <libxml/tree.h>
+
 
 G_BEGIN_DECLS
 
@@ -68,6 +70,8 @@ AutozIResource *autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_
 void autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
 
 gboolean autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
+
+xmlNodePtr autoz_get_xml (Autoz *autoz);
 
 
 G_END_DECLS

@@ -16,6 +16,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <libxml/tree.h>
+
 #include "autoz.h"
 #include "role.h"
 #include "resource.h"
@@ -28,6 +30,9 @@ main (int argc, char **argv)
 	AutozRole *role_writer_child;
 	AutozRole *role_read_only;
 	AutozResource *resource;
+
+	xmlDocPtr xdoc;
+	xmlNodePtr xnode;
 
 	g_type_init ();
 
@@ -59,6 +64,17 @@ main (int argc, char **argv)
 		NULL);
 
 	autoz_allow (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource));
+
+	/* get xml */
+	xnode = autoz_get_xml (autoz);
+	if (xnode != NULL)
+		{
+			xdoc = xmlNewDoc ("1.0");
+			xmlDocSetRootElement (xdoc, xnode);
+			g_fprintf (stdout, "\n");
+			xmlSaveFormatFile ("-", xdoc, 2);
+			g_fprintf (stdout, "\n");
+		}
 
 	g_message ("super-admin %s allowed to page.",
 	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), AUTOZ_IRESOURCE (resource)) ? "is" : "isn't"));

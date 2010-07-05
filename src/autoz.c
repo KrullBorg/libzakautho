@@ -513,6 +513,102 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	return ret;
 }
 
+xmlNodePtr
+autoz_get_xml (Autoz *autoz)
+{
+	AutozPrivate *priv;
+	xmlNodePtr ret;
+	xmlNodePtr xnode_parent;
+	xmlNodePtr xnode;
+
+	GHashTableIter iter;
+	gpointer key, value;
+
+	Role *role;
+	Resource *resource;
+	Rule *rule;
+
+	GList *parent;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = xmlNewNode (NULL, "autoz");
+
+	/* roles */
+	g_hash_table_iter_init (&iter, priv->roles);
+	while (g_hash_table_iter_next (&iter, &key, &value)) 
+		{
+			xnode_parent = xmlNewNode (NULL, "role");
+
+			role = (Role *)value;
+			xmlSetProp (xnode_parent, "id", autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+
+			xmlAddChild (ret, xnode_parent);
+
+			parent = role->parents;
+			while (parent != NULL)
+				{
+					xnode = xmlNewNode (NULL, "parent");
+
+					role = (Role *)parent->data;
+					xmlSetProp (xnode, "id", autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+
+					xmlAddChild (xnode_parent, xnode);
+					
+					parent = g_list_next (parent);
+				}
+		}
+
+	/* resources */
+	g_hash_table_iter_init (&iter, priv->resources);
+	while (g_hash_table_iter_next (&iter, &key, &value)) 
+		{
+			xnode_parent = xmlNewNode (NULL, "resource");
+
+			resource = (Resource *)value;
+			xmlSetProp (xnode_parent, "id", autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+
+			xmlAddChild (ret, xnode_parent);
+
+			parent = resource->parents;
+			while (parent != NULL)
+				{
+					xnode = xmlNewNode (NULL, "parent");
+
+					resource = (Resource *)parent->data;
+					xmlSetProp (xnode, "id", autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+
+					xmlAddChild (xnode_parent, xnode);
+					
+					parent = g_list_next (parent);
+				}
+		}
+
+	/* rules */
+	g_hash_table_iter_init (&iter, priv->rules);
+	while (g_hash_table_iter_next (&iter, &key, &value)) 
+		{
+			xnode = xmlNewNode (NULL, "rule");
+
+			rule = (Rule *)value;
+			xmlSetProp (xnode, "role", autoz_irole_get_role_id (AUTOZ_IROLE (rule->role->irole)));
+			if (rule->resource != NULL)
+				{
+					xmlSetProp (xnode, "resource", autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (rule->resource->iresource)));
+				}
+			else
+				{
+					xmlSetProp (xnode, "resource", "all");
+				}
+
+			xmlAddChild (ret, xnode);
+		}
+
+	return ret;
+}
+
 /* PRIVATE */
 static void
 autoz_set_property (GObject *object,
