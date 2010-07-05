@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<autoz>
+	<role id="read-only"/>
+	<role id="super-admin"/>
+	<role id="writer"/>
+	<role id="writer-child">
+		<parent id="writer"/>
+	</role>
+	<resource id="page"/>
+	<resource id="paragraph">
+		<parent id="page"/>
+	</resource>
+	<rule allow="yes" role="writer" resource="page"/>
+	<rule allow="yes" role="super-admin" resource=""/>
+	<rule allow="no" role="writer-child" resource="paragraph"/>
+</autoz>
+

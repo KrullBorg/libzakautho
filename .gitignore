@@ -41,6 +41,7 @@ docs/reference/xml/
 libtool
 stamp-h1
 tests/test
+tests/test_from_xml
 POTFILES
 mkinstalldirs
 stamp-it

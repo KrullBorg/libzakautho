@@ -24,6 +24,9 @@
 
 #include "autoz.h"
 
+#include "role.h"
+#include "resource.h"
+
 typedef struct _Role Role;
 struct _Role
 	{
@@ -128,6 +131,7 @@ autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
 	const gchar *role_id;
+	const gchar *role_id_parent;
 
 	g_return_if_fail (IS_AUTOZ (autoz));
 	g_return_if_fail (AUTOZ_IS_IROLE (irole));
@@ -149,15 +153,91 @@ autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 			va_start (args, irole);
 			while ((irole_parent = va_arg (args, AutozIRole *)) != NULL)
 				{
-					role_parent = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole_parent));
-					if (role_parent != NULL)
+					role_id_parent = autoz_irole_get_role_id (irole_parent);
+					if (g_strcmp0 (role_id, role_id_parent) == 0)
 						{
-							role->parents = g_list_append (role->parents, role_parent);
-						}					
+							g_warning ("The parent cannot be himself (%s).", role_id);
+						}
+					else
+						{					
+							role_parent = g_hash_table_lookup (priv->roles, role_id_parent);
+							if (role_parent != NULL)
+								{
+									role->parents = g_list_append (role->parents, role_parent);
+								}
+							else
+								{
+									g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole_parent));
+								}
+						}
 				}
 			va_end (args);
 
 			g_hash_table_insert (priv->roles, (gpointer)role_id, (gpointer)role);
+		}
+	else
+		{
+			g_warning ("Role «%s» not found.", role_id);
+		}
+}
+
+void
+autoz_add_parent_to_role (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent)
+{
+	autoz_add_parents_to_role (autoz, irole, irole_parent, NULL);
+}
+
+void
+autoz_add_parents_to_role (Autoz *autoz, AutozIRole *irole, ...)
+{
+	AutozPrivate *priv;
+
+	Role *role;
+
+	const gchar *role_id;
+	const gchar *role_id_parent;
+
+	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (AUTOZ_IS_IROLE (irole));
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	role_id = autoz_irole_get_role_id (irole);
+
+	role = g_hash_table_lookup (priv->roles, role_id);
+	if (role != NULL)
+		{
+			va_list args;
+
+			AutozIRole *irole_parent;
+			Role *role_parent;
+
+			va_start (args, irole);
+			while ((irole_parent = va_arg (args, AutozIRole *)) != NULL)
+				{
+					role_id_parent = autoz_irole_get_role_id (irole_parent);
+					if (g_strcmp0 (role_id, role_id_parent) == 0)
+						{
+							g_warning ("The parent cannot be himself (%s).", role_id);
+						}
+					else
+						{
+							role_parent = g_hash_table_lookup (priv->roles, role_id_parent);
+							if (role_parent != NULL)
+								{
+									role->parents = g_list_append (role->parents, role_parent);
+								}
+							else
+								{
+									g_warning ("Role «%s» not found.", role_id);
+								}
+						}
+				}
+			va_end (args);
+		}
+	else
+		{
+			g_warning ("Role «%s» not found.", role_id);
 		}
 }
 
@@ -185,25 +265,7 @@ AutozIRole
 void
 autoz_add_resource (Autoz *autoz, AutozIResource *iresource)
 {
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
-
-	g_return_if_fail (IS_AUTOZ (autoz));
-	g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
-
-	const gchar *resource_id;
-
-	resource_id = autoz_iresource_get_resource_id (iresource);
-
-	if (g_hash_table_lookup (priv->resources, resource_id) == NULL)
-		{
-			Resource *resource;
-
-			resource = (Resource *)g_malloc0 (sizeof (Resource));
-			resource->iresource = iresource;
-			resource->parents = NULL;
-
-			g_hash_table_insert (priv->resources, (gpointer)resource_id, (gpointer)resource);
-		}
+	autoz_add_resource_with_parents (autoz, iresource, NULL);
 }
 
 void
@@ -212,6 +274,7 @@ autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...)
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
 	const gchar *resource_id;
+	const gchar *resource_id_parent;
 
 	g_return_if_fail (IS_AUTOZ (autoz));
 	g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
@@ -233,15 +296,91 @@ autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...)
 			va_start (args, iresource);
 			while ((iresource_parent = va_arg (args, AutozIResource *)) != NULL)
 				{
-					resource_parent = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource_parent));
-					if (resource_parent != NULL)
+					resource_id_parent = autoz_iresource_get_resource_id (iresource_parent);
+					if (g_strcmp0 (resource_id, resource_id_parent) == 0)
 						{
-							resource->parents = g_list_append (resource->parents, resource_parent);
-						}					
+							g_warning ("The parent cannot be himself (%s).", resource_id);
+						}
+					else
+						{
+							resource_parent = g_hash_table_lookup (priv->resources, resource_id_parent);
+							if (resource_parent != NULL)
+								{
+									resource->parents = g_list_append (resource->parents, resource_parent);
+								}					
+							else
+								{
+									g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource_parent));
+							}
+						}	
 				}
 			va_end (args);
 
 			g_hash_table_insert (priv->resources, (gpointer)resource_id, (gpointer)resource);
+		}
+	else
+		{
+			g_warning ("Resource «%s» not found.", resource_id);
+		}
+}
+
+void
+autoz_add_parent_to_resource (Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent)
+{
+	autoz_add_parents_to_resource (autoz, iresource, iresource_parent, NULL);
+}
+
+void
+autoz_add_parents_to_resource (Autoz *autoz, AutozIResource *iresource, ...)
+{
+	AutozPrivate *priv;
+
+	Resource *resource;
+
+	const gchar *resource_id;
+	const gchar *resource_id_parent;
+
+	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	resource_id = autoz_iresource_get_resource_id (iresource);
+
+	resource = g_hash_table_lookup (priv->resources, resource_id);
+	if (resource != NULL)
+		{
+			va_list args;
+
+			AutozIResource *iresource_parent;
+			Resource *resource_parent;
+
+			va_start (args, iresource);
+			while ((iresource_parent = va_arg (args, AutozIResource *)) != NULL)
+				{
+					resource_id_parent = autoz_iresource_get_resource_id (iresource_parent);
+					if (g_strcmp0 (resource_id, resource_id_parent) == 0)
+						{
+							g_warning ("The parent cannot be himself (%s).", resource_id);
+						}
+					else
+						{
+							resource_parent = g_hash_table_lookup (priv->roles, resource_id_parent);
+							if (resource_parent != NULL)
+								{
+									resource->parents = g_list_append (resource->parents, resource_parent);
+								}
+							else
+								{
+									g_warning ("Resource «%s» not found.", resource_id);
+								}
+						}
+				}
+			va_end (args);
+		}
+	else
+		{
+			g_warning ("Resource «%s» not found.", resource_id);
 		}
 }
 
@@ -714,7 +853,7 @@ autoz_get_xml (Autoz *autoz)
 				}
 			else
 				{
-					xmlSetProp (xnode, "resource", "all");
+					xmlSetProp (xnode, "resource", "");
 				}
 
 			xmlAddChild (ret, xnode);
@@ -740,6 +879,137 @@ autoz_get_xml (Autoz *autoz)
 				}
 
 			xmlAddChild (ret, xnode);
+		}
+
+	return ret;
+}
+
+gboolean
+autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
+{
+	gboolean ret;
+
+	AutozPrivate *priv;
+
+	xmlNodePtr current;
+	xmlNodePtr current_parent;
+
+	AutozIRole *irole;
+	AutozIResource *iresource;
+	gchar *prop;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (xnode != NULL, FALSE);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = TRUE;
+
+	if (replace)
+		{
+			/* clearing current authorizations */
+			g_hash_table_destroy (priv->roles);
+			g_hash_table_destroy (priv->resources);
+			g_hash_table_destroy (priv->rules_allow);
+			g_hash_table_destroy (priv->rules_deny);
+
+			priv->roles = g_hash_table_new (g_str_hash, g_str_equal);
+			priv->resources = g_hash_table_new (g_str_hash, g_str_equal);
+			priv->rules_allow = g_hash_table_new (g_str_hash, g_str_equal);
+			priv->rules_deny = g_hash_table_new (g_str_hash, g_str_equal);
+		}
+
+	if (xmlStrcmp (xnode->name, "autoz") != 0)
+		{
+			g_warning ("Invalid xml structure.");
+			ret = FALSE;
+		}
+	else
+		{
+			current = xnode->children;
+			while (current != NULL)
+				{
+					if (!xmlNodeIsText (current))
+						{
+							if (xmlStrcmp (current->name, "role") == 0)
+								{
+									prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "id")));
+									if (g_strcmp0 (prop, "") != 0)
+										{
+											irole = AUTOZ_IROLE (autoz_role_new (prop));
+											autoz_add_role (autoz, irole);
+
+											current_parent = current->children;
+											while (current_parent != NULL)
+												{
+													if (!xmlNodeIsText (current_parent) &&
+													    xmlStrcmp (current_parent->name, "parent") == 0)
+													    {
+													    	prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current_parent, "id")));
+													    	if (g_strcmp0 (prop, "") != 0)
+																{
+																	autoz_add_parent_to_role (autoz, irole,  autoz_get_role_from_id (autoz, prop));
+																}
+													    }
+													current_parent = current_parent->next;
+												}
+										}
+								}
+							else if (xmlStrcmp (current->name, "resource") == 0)
+								{
+									prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "id")));
+									if (g_strcmp0 (prop, "") != 0)
+										{
+											iresource = AUTOZ_IRESOURCE (autoz_resource_new (prop));
+											autoz_add_resource (autoz, iresource);
+
+											current_parent = current->children;
+											while (current_parent != NULL)
+												{
+													if (!xmlNodeIsText (current_parent) &&
+													    xmlStrcmp (current_parent->name, "parent") == 0)
+													    {
+													    	prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current_parent, "id")));
+													    	if (g_strcmp0 (prop, "") != 0)
+																{
+																	autoz_add_parent_to_resource (autoz, iresource, autoz_get_resource_from_id (autoz, prop));
+																}
+													    }
+													current_parent = current_parent->next;
+												}
+										}
+								}
+							else if (xmlStrcmp (current->name, "rule") == 0)
+								{
+									prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "role")));
+									irole = autoz_get_role_from_id (autoz, prop);
+									if (irole != NULL)
+										{
+											prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "resource")));
+											if (g_strcmp0 (prop, "") == 0)
+												{
+													iresource = NULL;
+												}
+											else
+												{
+													iresource = autoz_get_resource_from_id (autoz, prop);
+												}
+
+											prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "allow")));
+											if (g_strcmp0 (prop, "yes") == 0)
+												{
+													autoz_allow (autoz, irole, iresource);
+												}
+											else
+												{
+													autoz_deny (autoz, irole, iresource);
+												}
+										}
+								}
+						}
+
+					current = current->next;
+				}
 		}
 
 	return ret;
