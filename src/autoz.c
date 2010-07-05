@@ -342,6 +342,7 @@ autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
 	if (role == NULL)
 		{
+			g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole));
 			return;
 		}
 
