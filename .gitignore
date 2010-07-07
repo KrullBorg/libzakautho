@@ -47,3 +47,4 @@ mkinstalldirs
 stamp-it
 intltool-*
 Rules-quot
+*.exe

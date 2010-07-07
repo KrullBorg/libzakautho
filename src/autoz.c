@@ -365,7 +365,7 @@ autoz_add_parents_to_resource (Autoz *autoz, AutozIResource *iresource, ...)
 						}
 					else
 						{
-							resource_parent = g_hash_table_lookup (priv->roles, resource_id_parent);
+							resource_parent = g_hash_table_lookup (priv->resources, resource_id_parent);
 							if (resource_parent != NULL)
 								{
 									resource->parents = g_list_append (resource->parents, resource_parent);
@@ -944,13 +944,13 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 												{
 													if (!xmlNodeIsText (current_parent) &&
 													    xmlStrcmp (current_parent->name, "parent") == 0)
-													    {
-													    	prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current_parent, "id")));
-													    	if (g_strcmp0 (prop, "") != 0)
+														{
+															prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current_parent, "id")));
+															if (g_strcmp0 (prop, "") != 0)
 																{
 																	autoz_add_parent_to_role (autoz, irole,  autoz_get_role_from_id (autoz, prop));
 																}
-													    }
+														}
 													current_parent = current_parent->next;
 												}
 										}
@@ -968,13 +968,13 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 												{
 													if (!xmlNodeIsText (current_parent) &&
 													    xmlStrcmp (current_parent->name, "parent") == 0)
-													    {
-													    	prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current_parent, "id")));
-													    	if (g_strcmp0 (prop, "") != 0)
+														{
+															prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current_parent, "id")));
+															if (g_strcmp0 (prop, "") != 0)
 																{
 																	autoz_add_parent_to_resource (autoz, iresource, autoz_get_resource_from_id (autoz, prop));
 																}
-													    }
+														}
 													current_parent = current_parent->next;
 												}
 										}
