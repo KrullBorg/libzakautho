@@ -73,11 +73,21 @@ autoz_get_type
 autoz_new
 autoz_add_role
 autoz_add_role_with_parents
+autoz_add_parent_to_role
+autoz_add_parents_to_role
 autoz_get_role_from_id
 autoz_add_resource
 autoz_add_resource_with_parents
+autoz_add_parent_to_resource
+autoz_add_parents_to_resource
 autoz_get_resource_from_id
 autoz_allow
+autoz_deny
 autoz_is_allowed
+autoz_clear
+autoz_get_xml
+autoz_load_from_xml
+autoz_save_to_db
+autoz_load_from_db
 </SECTION>
 

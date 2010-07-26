@@ -18,6 +18,8 @@
 
 #include <libxml/tree.h>
 
+#include <libgda/libgda.h>
+
 #include "autoz.h"
 
 int
@@ -28,13 +30,18 @@ main (int argc, char **argv)
 	xmlDocPtr xdoc;
 	xmlNodePtr xnode;
 
+	GError *error;
+	GdaConnection *gdacon;
+
 	g_type_init ();
+
+	gda_init ();
 
 	autoz = autoz_new ();
 
-	if (argc == 0)
+	if (argc < 2)
 		{
-			g_error ("You must specified an xml file to load.");
+			g_error ("You must specified an xml file to load and a db connection string.");
 			return 0;
 		}
 
@@ -46,6 +53,24 @@ main (int argc, char **argv)
 		}
 
 	autoz_load_from_xml (autoz, xmlDocGetRootElement (xdoc), TRUE);
+
+	error = NULL;
+	gdacon = gda_connection_open_from_string (NULL, argv[2], NULL, 0, &error);
+	if (gdacon == NULL)
+		{
+			g_error ("Error on creating GdaConnection: %s",
+			         error != NULL && error->message != NULL ? error->message : "no details");
+		}
+
+	/* save to db */
+	autoz_save_to_db (autoz, gdacon, NULL, TRUE);
+
+	g_object_unref (autoz);
+	autoz = NULL;
+
+	/* reload from db */
+	autoz = autoz_new ();
+	autoz_load_from_db (autoz, gdacon, NULL, TRUE);
 
 	/* get xml */
 	xnode = autoz_get_xml (autoz);

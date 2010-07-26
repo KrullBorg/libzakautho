@@ -61,6 +61,11 @@ static void autoz_init (Autoz *autoz);
 static AutozIsAllowed _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource);
 static AutozIsAllowed _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource);
 
+static gboolean _autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix);
+static guint _autoz_find_new_table_id (GdaConnection *gdacon, const gchar *table_name);
+static guint _autoz_get_role_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *role_id);
+static guint _autoz_get_resource_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *resource_id);
+
 static void autoz_set_property (GObject *object,
                                guint property_id,
                                const GValue *value,
@@ -119,12 +124,25 @@ Autoz
 	return AUTOZ (g_object_new (autoz_get_type (), NULL));
 }
 
+/**
+ * autoz_add_role:
+ * @autoz: an #Autoz object.
+ * @irole:
+ * 
+ */
 void
 autoz_add_role (Autoz *autoz, AutozIRole *irole)
 {
 	autoz_add_role_with_parents (autoz, irole, NULL);
 }
 
+/**
+ * autoz_add_role_with_parents:
+ * @autoz: an #Autoz object.
+ * @irole:
+ * @...:
+ * 
+ */
 void
 autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 {
@@ -181,12 +199,26 @@ autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 		}
 }
 
+/**
+ * autoz_add_parent_to_role:
+ * @autoz: an #Autoz object.
+ * @irole:
+ * @irole_parent:
+ * 
+ */
 void
 autoz_add_parent_to_role (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent)
 {
 	autoz_add_parents_to_role (autoz, irole, irole_parent, NULL);
 }
 
+/**
+ * autoz_add_parents_to_role:
+ * @autoz: an #Autoz object.
+ * @irole:
+ * @...:
+ * 
+ */
 void
 autoz_add_parents_to_role (Autoz *autoz, AutozIRole *irole, ...)
 {
@@ -241,6 +273,12 @@ autoz_add_parents_to_role (Autoz *autoz, AutozIRole *irole, ...)
 		}
 }
 
+/**
+ * autoz_get_role_from_id:
+ * @autoz: an #Autoz object.
+ * @role_id:
+ * 
+ */
 AutozIRole
 *autoz_get_role_from_id (Autoz *autoz, const gchar *role_id)
 {
@@ -262,12 +300,25 @@ AutozIRole
 		}
 }
 
+/**
+ * autoz_add_resource:
+ * @autoz: an #Autoz object.
+ * @iresource:
+ * 
+ */
 void
 autoz_add_resource (Autoz *autoz, AutozIResource *iresource)
 {
 	autoz_add_resource_with_parents (autoz, iresource, NULL);
 }
 
+/**
+ * autoz_add_resource_with_parents:
+ * @autoz: an #Autoz object.
+ * @iresource:
+ * @...:
+ * 
+ */
 void
 autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...)
 {
@@ -324,12 +375,26 @@ autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...)
 		}
 }
 
+/**
+ * autoz_add_parent_to_resource:
+ * @autoz: an #Autoz object.
+ * @iresource:
+ * @iresource_parent:
+ * 
+ */
 void
 autoz_add_parent_to_resource (Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent)
 {
 	autoz_add_parents_to_resource (autoz, iresource, iresource_parent, NULL);
 }
 
+/**
+ * autoz_add_parents_to_resource:
+ * @autoz: an #Autoz object.
+ * @iresource:
+ * @...:
+ * 
+ */
 void
 autoz_add_parents_to_resource (Autoz *autoz, AutozIResource *iresource, ...)
 {
@@ -384,6 +449,12 @@ autoz_add_parents_to_resource (Autoz *autoz, AutozIResource *iresource, ...)
 		}
 }
 
+/**
+ * autoz_get_resource_from_id:
+ * @autoz: an #Autoz object.
+ * @resource_id:
+ * 
+ */
 AutozIResource
 *autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id)
 {
@@ -405,6 +476,13 @@ AutozIResource
 		}
 }
 
+/**
+ * autoz_allow:
+ * @autoz: an #Autoz object.
+ * @irole:
+ * @iresource:
+ * 
+ */
 void
 autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 {
@@ -461,6 +539,13 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 		}
 }
 
+/**
+ * autoz_deny:
+ * @autoz: an #Autoz object.
+ * @irole:
+ * @iresource:
+ * 
+ */
 void
 autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 {
@@ -646,6 +731,13 @@ _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource)
 	return ret;
 }
 
+/**
+ * autoz_is_allowed:
+ * @autoz: an #Autoz object.
+ * @irole:
+ * @iresource:
+ * 
+ */
 gboolean
 autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 {
@@ -764,6 +856,42 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	return ret;
 }
 
+/**
+ * autoz_clear:
+ * @autoz:
+ *
+ */
+gboolean
+autoz_clear (Autoz *autoz)
+{
+	gboolean ret;
+
+	AutozPrivate *priv;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = TRUE;
+
+	g_hash_table_destroy (priv->roles);
+	g_hash_table_destroy (priv->resources);
+	g_hash_table_destroy (priv->rules_allow);
+	g_hash_table_destroy (priv->rules_deny);
+
+	priv->roles = g_hash_table_new (g_str_hash, g_str_equal);
+	priv->resources = g_hash_table_new (g_str_hash, g_str_equal);
+	priv->rules_allow = g_hash_table_new (g_str_hash, g_str_equal);
+	priv->rules_deny = g_hash_table_new (g_str_hash, g_str_equal);
+
+	return ret;
+}
+
+/**
+ * autoz_get_xml:
+ * @autoz: an #Autoz object.
+ * 
+ */
 xmlNodePtr
 autoz_get_xml (Autoz *autoz)
 {
@@ -884,6 +1012,13 @@ autoz_get_xml (Autoz *autoz)
 	return ret;
 }
 
+/**
+ * autoz_load_fro_xml:
+ * @autoz: an #Autoz object.
+ * @xnode:
+ * @replace:
+ * 
+ */
 gboolean
 autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 {
@@ -908,15 +1043,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 	if (replace)
 		{
 			/* clearing current authorizations */
-			g_hash_table_destroy (priv->roles);
-			g_hash_table_destroy (priv->resources);
-			g_hash_table_destroy (priv->rules_allow);
-			g_hash_table_destroy (priv->rules_deny);
-
-			priv->roles = g_hash_table_new (g_str_hash, g_str_equal);
-			priv->resources = g_hash_table_new (g_str_hash, g_str_equal);
-			priv->rules_allow = g_hash_table_new (g_str_hash, g_str_equal);
-			priv->rules_deny = g_hash_table_new (g_str_hash, g_str_equal);
+			autoz_clear (autoz);
 		}
 
 	if (xmlStrcmp (xnode->name, "autoz") != 0)
@@ -1010,6 +1137,641 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 
 					current = current->next;
 				}
+		}
+
+	return ret;
+}
+
+static gboolean
+_autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix)
+{
+	gboolean ret;
+
+	gchar *sql;
+	GError *error;
+
+	ret = TRUE;
+
+	error = NULL;
+	sql = g_strdup_printf ("DELETE FROM %sroles", table_prefix);
+	gda_execute_non_select_command (gdacon, sql, &error);
+	if (error != NULL)
+		{
+			g_warning ("Error on deleting roles table content: %s",
+			           error->message != NULL ? error->message : "No details");
+		}
+	error = NULL;
+	sql = g_strdup_printf ("DELETE FROM %sroles_parents", table_prefix);
+	gda_execute_non_select_command (gdacon, sql, &error);
+	if (error != NULL)
+		{
+			g_warning ("Error on deleting roles_parents table content: %s",
+			           error->message != NULL ? error->message : "No details");
+		}
+	error = NULL;
+	sql = g_strdup_printf ("DELETE FROM %sresources", table_prefix);
+	gda_execute_non_select_command (gdacon, sql, &error);
+	if (error != NULL)
+		{
+			g_warning ("Error on deleting resources table content: %s",
+			           error->message != NULL ? error->message : "No details");
+		}
+	error = NULL;
+	sql = g_strdup_printf ("DELETE FROM %sresources_parents", table_prefix);
+	gda_execute_non_select_command (gdacon, sql, &error);
+	if (error != NULL)
+		{
+			g_warning ("Error on deleting resources_parents table content: %s",
+			           error->message != NULL ? error->message : "No details");
+		}
+	error = NULL;
+	sql = g_strdup_printf ("DELETE FROM %srules", table_prefix);
+	gda_execute_non_select_command (gdacon, sql, &error);
+	if (error != NULL)
+		{
+			g_warning ("Error on deleting rules table content: %s",
+			           error->message != NULL ? error->message : "No details");
+		}
+
+	return ret;
+}
+
+static guint
+_autoz_find_new_table_id (GdaConnection *gdacon, const gchar *table_name)
+{
+	gchar *sql;
+	GError *error;
+	GdaDataModel *dm;
+
+	guint new_id;
+
+	error = NULL;
+	sql = g_strdup_printf ("SELECT COALESCE (MAX (id), 0) FROM %s",
+	                       table_name);
+	dm = gda_execute_select_command (gdacon, sql, &error);
+	if (dm != NULL && gda_data_model_get_n_rows (dm) == 1)
+		{
+			new_id = g_value_get_int (gda_data_model_get_value_at (dm, 0, 0, &error));
+			new_id++;
+		}
+	else if (dm == NULL || error != NULL)
+		{
+			new_id = 0;
+			g_warning ("Problem on getting new id from table «%s»: %s",
+			           error->message != NULL ? error->message : "no details");
+		}
+	else
+		{
+			new_id = 1;
+		}
+
+	return new_id;
+}
+
+static guint
+_autoz_get_role_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *role_id)
+{
+	gchar *sql;
+	GError *error;
+	GdaDataModel *dm;
+
+	guint id;
+
+	id = 0;
+
+	error = NULL;
+	sql = g_strdup_printf ("SELECT id FROM %s"
+	                       " WHERE role_id = '%s'",
+	                       table_name,
+	                       role_id);
+	dm = gda_execute_select_command (gdacon, sql, &error);
+	if (dm != NULL && gda_data_model_get_n_rows (dm) == 1)
+		{
+			id = g_value_get_int (gda_data_model_get_value_at (dm, 0, 0, &error));
+		}
+	else if (error != NULL)
+		{
+			g_warning ("Problem on getting role id from table «%s»: %s",
+			           error->message != NULL ? error->message : "no details");
+		}	
+
+	return id;
+}
+
+static guint
+_autoz_get_resource_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *resource_id)
+{
+	gchar *sql;
+	GError *error;
+	GdaDataModel *dm;
+
+	guint id;
+
+	id = 0;
+
+	error = NULL;
+	sql = g_strdup_printf ("SELECT id FROM %s"
+	                       " WHERE resource_id = '%s'",
+	                       table_name,
+	                       resource_id);
+	dm = gda_execute_select_command (gdacon, sql, &error);
+	if (dm != NULL && gda_data_model_get_n_rows (dm) == 1)
+		{
+			id = g_value_get_int (gda_data_model_get_value_at (dm, 0, 0, &error));
+		}
+	else if (error != NULL)
+		{
+			g_warning ("Problem on getting resource id from table «%s»: %s",
+			           error->message != NULL ? error->message : "no details");
+		}	
+
+	return id;
+}
+
+/**
+ * autoz_save_to_db:
+ * @autoz: an #Autoz object.
+ * @gdacon:
+ * @table_prefix:
+ * @replace:
+ * 
+ */
+gboolean
+autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
+                  const gchar *table_prefix, gboolean replace)
+{
+	AutozPrivate *priv;
+
+	gboolean ret;
+
+	gboolean in_trans;
+
+	gchar *prefix;
+
+	gchar *sql;
+	GError *error;
+
+	GHashTableIter iter;
+	gpointer key, value;
+
+	Role *role;
+	Resource *resource;
+	Rule *rule;
+
+	GList *parent;
+
+	gchar *table_name;
+	gchar *table_name_parent;
+
+	guint new_id;
+	guint id_parent;
+	guint id_roles;
+	guint id_resources;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (GDA_IS_CONNECTION (gdacon), FALSE);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = TRUE;
+
+	error = NULL;
+	in_trans = gda_connection_begin_transaction (gdacon, "autoz-save-to-db", 0, &error);
+	if (!in_trans)
+		{
+			g_warning ("Error on starting transaction: %s",
+			           error != NULL && error->message != NULL ? error->message : "No details");
+		}
+
+	if (table_prefix == NULL)
+		{
+			prefix = g_strdup ("");
+		}
+	else
+		{
+			prefix = g_strstrip (g_strdup (table_prefix));
+		}
+
+	if (replace)
+		{
+			/* deleting table's content */
+			_autoz_delete_table_content (gdacon, prefix);
+		}
+
+	/* roles */
+	table_name = g_strdup_printf ("%sroles", prefix);
+	table_name_parent = g_strdup_printf ("%s_parents", table_name);
+	g_hash_table_iter_init (&iter, priv->roles);
+	while (g_hash_table_iter_next (&iter, &key, &value)) 
+		{
+			new_id = _autoz_find_new_table_id (gdacon, table_name);
+			if (new_id <= 0)
+				{
+					ret = FALSE;
+					break;
+				}
+
+			role = (Role *)value;
+
+			error = NULL;
+			sql = g_strdup_printf ("INSERT INTO %s"
+			                       " (id, role_id)"
+			                       " VALUES (%d, '%s')",
+			                       table_name,
+			                       new_id,
+			                       autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+			gda_execute_non_select_command (gdacon, sql, &error);
+			if (error != NULL)
+				{
+					g_warning ("Error on saving role «%s»: %s",
+					           autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)),
+					           error->message != NULL ? error->message : "no details");
+					continue;
+				}
+
+			parent = role->parents;
+			while (parent != NULL)
+				{
+					role = (Role *)parent->data;
+
+					id_parent = _autoz_get_role_id_db (gdacon, table_name, autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+					if (id_parent > 0)
+						{
+							error = NULL;
+							sql = g_strdup_printf ("INSERT INTO %s"
+											       " (id_roles, id_roles_parent)"
+											       " VALUES (%d, %d)",
+											       table_name_parent,
+											       new_id,
+											       id_parent);
+							gda_execute_non_select_command (gdacon, sql, &error);
+							if (error != NULL)
+								{
+									g_warning ("Error on saving role parent «%s»: %s",
+											   autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)),
+											   error->message != NULL ? error->message : "no details");
+									continue;
+								}
+						}
+					else
+						{
+							g_warning ("Unable to find parent role «%s»",
+							           autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+						}
+
+					parent = g_list_next (parent);
+				}
+		}
+
+	if (!ret)
+		{
+			g_warning ("Unable to save roles");
+		}
+
+	ret = TRUE;
+
+	/* resources */
+	table_name = g_strdup_printf ("%sresources", prefix);
+	table_name_parent = g_strdup_printf ("%s_parents", table_name);
+	g_hash_table_iter_init (&iter, priv->resources);
+	while (g_hash_table_iter_next (&iter, &key, &value)) 
+		{
+			new_id = _autoz_find_new_table_id (gdacon, table_name);
+			if (new_id <= 0)
+				{
+					ret = FALSE;
+					break;
+				}
+
+			resource = (Resource *)value;
+
+			error = NULL;
+			sql = g_strdup_printf ("INSERT INTO %s"
+			                       " (id, resource_id)"
+			                       " VALUES (%d, '%s')",
+			                       table_name,
+			                       new_id,
+			                       autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+			gda_execute_non_select_command (gdacon, sql, &error);
+			if (error != NULL)
+				{
+					g_warning ("Error on saving resource «%s»: %s",
+					           autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)),
+					           error->message != NULL ? error->message : "no details");
+					continue;
+				}
+
+			parent = resource->parents;
+			while (parent != NULL)
+				{
+					resource = (Resource *)parent->data;
+
+					id_parent = _autoz_get_resource_id_db (gdacon, table_name, autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+					if (id_parent > 0)
+						{
+							error = NULL;
+							sql = g_strdup_printf ("INSERT INTO %s"
+											       " (id_resources, id_resources_parent)"
+											       " VALUES (%d, %d)",
+											       table_name_parent,
+											       new_id,
+											       id_parent);
+							gda_execute_non_select_command (gdacon, sql, &error);
+							if (error != NULL)
+								{
+									g_warning ("Error on saving resource parent «%s»: %s",
+											   autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)),
+											   error->message != NULL ? error->message : "no details");
+									continue;
+								}
+						}
+					else
+						{
+							g_warning ("Unable to find parent resource «%s»",
+							           autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+						}
+
+					parent = g_list_next (parent);
+				}
+		}
+
+	if (!ret)
+		{
+			g_warning ("Unable to save resources");
+		}
+
+	/* rules allow */
+	table_name = g_strdup_printf ("%srules", prefix);
+	table_name_parent = g_strdup_printf ("%s_parents", table_name);
+	g_hash_table_iter_init (&iter, priv->rules_allow);
+	while (g_hash_table_iter_next (&iter, &key, &value)) 
+		{
+			new_id = _autoz_find_new_table_id (gdacon, table_name);
+			if (new_id <= 0)
+				{
+					ret = FALSE;
+					break;
+				}
+
+			rule = (Rule *)value;
+
+			id_roles = _autoz_get_role_id_db (gdacon, g_strdup_printf ("%sroles", prefix), autoz_irole_get_role_id (AUTOZ_IROLE (rule->role->irole)));
+			if (id_roles > 0)
+				{
+					if (rule->resource != NULL)
+						{
+							id_resources = _autoz_get_resource_id_db (gdacon, g_strdup_printf ("%sresources", prefix), autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (rule->resource->iresource)));
+						}
+					else
+						{
+							id_resources = 0;
+						}
+
+					error = NULL;
+					sql = g_strdup_printf ("INSERT INTO %s"
+					                       " (id, type, id_roles, id_resources)"
+					                       " VALUES (%d, 1, %d, %d)",
+					                       table_name,
+					                       new_id,
+					                       id_roles,
+					                       id_resources);
+					gda_execute_non_select_command (gdacon, sql, &error);
+					if (error != NULL)
+						{
+							g_warning ("Error on saving rule: %s",
+							           error->message != NULL ? error->message : "no details");
+						}
+				}
+		}
+
+	/* rules deny */
+	g_hash_table_iter_init (&iter, priv->rules_deny);
+	while (g_hash_table_iter_next (&iter, &key, &value)) 
+		{
+			new_id = _autoz_find_new_table_id (gdacon, table_name);
+			if (new_id <= 0)
+				{
+					ret = FALSE;
+					break;
+				}
+
+			rule = (Rule *)value;
+
+			id_roles = _autoz_get_role_id_db (gdacon, g_strdup_printf ("%sroles", prefix), autoz_irole_get_role_id (AUTOZ_IROLE (rule->role->irole)));
+			if (id_roles > 0)
+				{
+					if (rule->resource != NULL)
+						{
+							id_resources = _autoz_get_resource_id_db (gdacon, g_strdup_printf ("%sresources", prefix), autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (rule->resource->iresource)));
+						}
+					else
+						{
+							id_resources = 0;
+						}
+
+					error = NULL;
+					sql = g_strdup_printf ("INSERT INTO %s"
+					                       " (id, type, id_roles, id_resources)"
+					                       " VALUES (%d, 2, %d, %d)",
+					                       table_name,
+					                       new_id,
+					                       id_roles,
+					                       id_resources);
+					gda_execute_non_select_command (gdacon, sql, &error);
+					if (error != NULL)
+						{
+							g_warning ("Error on saving rule: %s",
+							           error->message != NULL ? error->message : "no details");
+						}
+				}
+		}
+
+	error = NULL;
+	if (in_trans && !gda_connection_commit_transaction (gdacon, "autoz-save-to-db", &error))
+		{
+			g_warning ("Error on committing transaction: %s",
+			           error != NULL && error->message != NULL ? error->message : "No details");
+		}
+	else
+		{
+			ret = TRUE;
+		}
+
+	return ret;
+}
+
+/**
+ * autoz_load_from_db:
+ * @autoz: an #Autoz object.
+ * @gdacon:
+ * @table_prefix:
+ * @replace:
+ * 
+ */
+gboolean
+autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace)
+{
+	AutozPrivate *priv;
+
+	gboolean ret;
+
+	gchar *prefix;
+
+	gchar *sql;
+	GError *error;
+	GdaDataModel *dm;
+
+	const GValue *gval;
+	gchar *role_id;
+	gchar *resource_id;
+	guint rule_type;
+
+	AutozIRole *irole;
+	AutozIResource *iresource;
+	Rule *rule;
+
+	guint row;
+	guint rows;
+
+	gchar *table_name;
+	gchar *table_name_parent;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (GDA_IS_CONNECTION (gdacon), FALSE);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = TRUE;
+
+	if (replace)
+		{
+			/* clearing current authorizations */
+			autoz_clear (autoz);
+		}
+
+	if (table_prefix == NULL)
+		{
+			prefix = g_strdup ("");
+		}
+	else
+		{
+			prefix = g_strdup (table_name);
+		}
+
+	/* roles */
+	error = NULL;
+	table_name = g_strdup_printf ("%sroles", prefix);
+	sql = g_strdup_printf ("SELECT role_id FROM %s ORDER BY id",
+	                       table_name);
+	dm = gda_execute_select_command (gdacon, sql, &error);
+	if (dm != NULL)
+		{
+			rows = gda_data_model_get_n_rows (dm);
+			for (row = 0; row < rows; row++)
+				{
+					error = NULL;
+					irole = AUTOZ_IROLE (autoz_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					autoz_add_role (autoz, irole);
+				}
+		}
+	else if (error != NULL)
+		{
+			g_warning ("Error on reading table «roles»: %s",
+			           error->message != NULL ? error->message : "no details");
+		}
+
+	/* resources */
+	error = NULL;
+	table_name = g_strdup_printf ("%sresources", prefix);
+	sql = g_strdup_printf ("SELECT resource_id FROM %s ORDER BY id",
+	                       table_name);
+	dm = gda_execute_select_command (gdacon, sql, &error);
+	if (dm != NULL)
+		{
+			rows = gda_data_model_get_n_rows (dm);
+			for (row = 0; row < rows; row++)
+				{
+					error = NULL;
+					iresource = AUTOZ_IRESOURCE (autoz_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					autoz_add_resource (autoz, iresource);
+				}
+		}
+	else if (error != NULL)
+		{
+			g_warning ("Error on reading table «resources»: %s",
+			           error->message != NULL ? error->message : "no details");
+		}
+
+	/* rules */
+	error = NULL;
+	table_name = g_strdup_printf ("%srules", prefix);
+	sql = g_strdup_printf ("SELECT ru.type, ro.role_id, re.resource_id"
+	                       " FROM %s AS ru"
+	                       " LEFT JOIN %sroles AS ro ON ru.id_roles = ro.id"
+	                       " LEFT JOIN %sresources AS re ON ru.id_resources = re.id",
+	                       table_name,
+	                       prefix,
+	                       prefix);
+	dm = gda_execute_select_command (gdacon, sql, &error);
+	if (dm != NULL)
+		{
+			rows = gda_data_model_get_n_rows (dm);
+			for (row = 0; row < rows; row++)
+				{
+					error = NULL;
+					gval = gda_data_model_get_value_at (dm, 1, row, &error);
+					if (gval == NULL || error != NULL)
+						{
+							g_warning ("Error on reading role_id value: %s",
+							           error != NULL && error->message != NULL ? error->message : "no details");
+						}
+					else if (gval != NULL && error == NULL && !gda_value_is_null (gval))
+						{
+							role_id = gda_value_stringify (gval);
+							irole = autoz_get_role_from_id (autoz, role_id);
+							if (irole != NULL)
+								{
+									gval = gda_data_model_get_value_at (dm, 2, row, &error);
+									if (gval == NULL || gda_value_is_null (gval))
+										{
+											iresource = NULL;
+										}
+									else
+										{
+											resource_id = gda_value_stringify (gval);
+											iresource = autoz_get_resource_from_id (autoz, resource_id);
+										}
+
+									gval = gda_data_model_get_value_at (dm, 0, row, &error);
+									if (gval == NULL || error != NULL)
+										{
+											g_warning ("Error on reading type value: %s",
+													   error != NULL && error->message != NULL ? error->message : "no details");
+										}
+									else if (gval != NULL && error == NULL && !gda_value_is_null (gval))
+										{
+											rule_type = g_value_get_int (gval);
+											if (rule_type == 1)
+												{
+													autoz_allow (autoz, irole, iresource);
+												}
+											else if (rule_type == 2)
+												{
+													autoz_deny (autoz, irole, iresource);
+												}
+											else
+												{
+													g_warning ("Rule type %d not admitted", rule_type);
+												}
+										}
+								}
+						}
+				}
+		}
+	else if (error != NULL)
+		{
+			g_warning ("Error on reading table «resources»: %s",
+			           error->message != NULL ? error->message : "no details");
 		}
 
 	return ret;

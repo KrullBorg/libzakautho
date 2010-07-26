@@ -31,7 +31,8 @@ GTK_DOC_CHECK
 # Checks for libraries.
 PKG_CHECK_MODULES(AUTOZ, [gobject-2.0 >= 2.24.0
                           glib-2.0 >= 2.24.0
-                          libxml-2.0 >= 2.7])
+                          libxml-2.0 >= 2.7
+                          libgda-4.0 >= 4.0.0])
 
 AC_SUBST(AUTOZ_CFLAGS)
 AC_SUBST(AUTOZ_LIBS)

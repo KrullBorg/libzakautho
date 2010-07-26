@@ -23,6 +23,7 @@
 #include <glib-object.h>
 
 #include <libxml/tree.h>
+#include <libgda/libgda.h>
 
 
 G_BEGIN_DECLS
@@ -76,8 +77,13 @@ void autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
 
 gboolean autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
 
+gboolean autoz_clear (Autoz *autoz);
+
 xmlNodePtr autoz_get_xml (Autoz *autoz);
-gboolean autoz_load_fro_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace);
+gboolean autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace);
+
+gboolean autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
+gboolean autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
 
 
 G_END_DECLS

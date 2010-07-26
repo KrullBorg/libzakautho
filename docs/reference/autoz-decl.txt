@@ -63,6 +63,16 @@ Autoz *autoz, AutozIRole *irole
 Autoz *autoz, AutozIRole *irole, ... 
 </FUNCTION>
 <FUNCTION>
+<NAME>autoz_add_parent_to_role</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_add_parents_to_role</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIRole *irole, ... 
+</FUNCTION>
+<FUNCTION>
 <NAME>autoz_get_role_from_id</NAME>
 <RETURNS>AutozIRole *</RETURNS>
 Autoz *autoz, const gchar *role_id 
@@ -78,6 +88,16 @@ Autoz *autoz, AutozIResource *iresource
 Autoz *autoz, AutozIResource *iresource, ... 
 </FUNCTION>
 <FUNCTION>
+<NAME>autoz_add_parent_to_resource</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_add_parents_to_resource</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIResource *iresource, ... 
+</FUNCTION>
+<FUNCTION>
 <NAME>autoz_get_resource_from_id</NAME>
 <RETURNS>AutozIResource *</RETURNS>
 Autoz *autoz, const gchar *resource_id 
@@ -88,9 +108,39 @@ Autoz *autoz, const gchar *resource_id
 Autoz *autoz, AutozIRole *irole, AutozIResource *iresource 
 </FUNCTION>
 <FUNCTION>
+<NAME>autoz_deny</NAME>
+<RETURNS>void </RETURNS>
+Autoz *autoz, AutozIRole *irole, AutozIResource *iresource 
+</FUNCTION>
+<FUNCTION>
 <NAME>autoz_is_allowed</NAME>
 <RETURNS>gboolean </RETURNS>
 Autoz *autoz, AutozIRole *irole, AutozIResource *iresource 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_clear</NAME>
+<RETURNS>gboolean </RETURNS>
+Autoz *autoz 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_get_xml</NAME>
+<RETURNS>xmlNodePtr </RETURNS>
+Autoz *autoz 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_load_from_xml</NAME>
+<RETURNS>gboolean </RETURNS>
+Autoz *autoz, xmlNodePtr xnode, gboolean replace 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_save_to_db</NAME>
+<RETURNS>gboolean </RETURNS>
+Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_load_from_db</NAME>
+<RETURNS>gboolean </RETURNS>
+Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace 
 </FUNCTION>
 <MACRO>
 <NAME>AUTOZ_TYPE_ROLE</NAME>
