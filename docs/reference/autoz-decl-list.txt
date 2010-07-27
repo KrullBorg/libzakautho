@@ -1,4 +1,18 @@
 <SECTION>
+<FILE>resource_interface</FILE>
+<TITLE>AutozIResource</TITLE>
+AutozIResource
+AutozIResourceIface
+autoz_iresource_get_resource_id
+<SUBSECTION Standard>
+AUTOZ_IRESOURCE
+AUTOZ_IS_IRESOURCE
+AUTOZ_TYPE_IRESOURCE
+autoz_iresource_get_type
+AUTOZ_IRESOURCE_GET_IFACE
+</SECTION>
+
+<SECTION>
 <FILE>role</FILE>
 <TITLE>AutozRole</TITLE>
 AutozRole
@@ -12,20 +26,6 @@ autoz_role_get_type
 AUTOZ_ROLE_CLASS
 AUTOZ_IS_ROLE_CLASS
 AUTOZ_ROLE_GET_CLASS
-</SECTION>
-
-<SECTION>
-<FILE>resource_interface</FILE>
-<TITLE>AutozIResource</TITLE>
-AutozIResource
-AutozIResourceIface
-autoz_iresource_get_resource_id
-<SUBSECTION Standard>
-AUTOZ_IRESOURCE
-AUTOZ_IS_IRESOURCE
-AUTOZ_TYPE_IRESOURCE
-autoz_iresource_get_type
-AUTOZ_IRESOURCE_GET_IFACE
 </SECTION>
 
 <SECTION>

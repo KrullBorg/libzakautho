@@ -1627,7 +1627,9 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	guint rule_type;
 
 	AutozIRole *irole;
+	AutozIRole *irole_parent;
 	AutozIResource *iresource;
+	AutozIResource *iresource_parent;
 	Rule *rule;
 
 	guint row;
@@ -1680,6 +1682,35 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 			           error->message != NULL ? error->message : "no details");
 		}
 
+	/* roles parents */
+	error = NULL;
+	table_name = g_strdup_printf ("%sroles_parents", prefix);
+	sql = g_strdup_printf ("SELECT r1.role_id, r2.role_id"
+	                       " FROM %s AS rp"
+	                       " INNER JOIN %sroles AS r1 ON rp.id_roles = r1.id"
+	                       " INNER JOIN %sroles AS r2 ON rp.id_roles_parent = r2.id"
+	                       " ORDER BY rp.id_roles, rp.id_roles_parent",
+	                       table_name,
+	                       prefix,
+	                       prefix);
+	dm = gda_execute_select_command (gdacon, sql, &error);
+	if (dm != NULL)
+		{
+			rows = gda_data_model_get_n_rows (dm);
+			for (row = 0; row < rows; row++)
+				{
+					error = NULL;
+					irole = AUTOZ_IROLE (autoz_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					irole_parent = AUTOZ_IROLE (autoz_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 1, row, &error))));
+					autoz_add_parent_to_role (autoz, irole, irole_parent);
+				}
+		}
+	else if (error != NULL)
+		{
+			g_warning ("Error on reading table «roles_parents»: %s",
+			           error->message != NULL ? error->message : "no details");
+		}
+
 	/* resources */
 	error = NULL;
 	table_name = g_strdup_printf ("%sresources", prefix);
@@ -1699,6 +1730,35 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	else if (error != NULL)
 		{
 			g_warning ("Error on reading table «resources»: %s",
+			           error->message != NULL ? error->message : "no details");
+		}
+
+	/* resources parents */
+	error = NULL;
+	table_name = g_strdup_printf ("%sresources_parents", prefix);
+	sql = g_strdup_printf ("SELECT r1.resource_id, r2.resource_id"
+	                       " FROM %s AS rp"
+	                       " INNER JOIN %sresources AS r1 ON rp.id_resources = r1.id"
+	                       " INNER JOIN %sresources AS r2 ON rp.id_resources_parent = r2.id"
+	                       " ORDER BY rp.id_resources, rp.id_resources_parent",
+	                       table_name,
+	                       prefix,
+	                       prefix);
+	dm = gda_execute_select_command (gdacon, sql, &error);
+	if (dm != NULL)
+		{
+			rows = gda_data_model_get_n_rows (dm);
+			for (row = 0; row < rows; row++)
+				{
+					error = NULL;
+					iresource = AUTOZ_IRESOURCE (autoz_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					iresource_parent = AUTOZ_IRESOURCE (autoz_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 1, row, &error))));
+					autoz_add_parent_to_resource (autoz, iresource, iresource_parent);
+				}
+		}
+	else if (error != NULL)
+		{
+			g_warning ("Error on reading table «resources_parents»: %s",
 			           error->message != NULL ? error->message : "no details");
 		}
 

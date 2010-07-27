@@ -143,6 +143,47 @@ Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace
 Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace 
 </FUNCTION>
 <MACRO>
+<NAME>AUTOZ_TYPE_IRESOURCE</NAME>
+#define AUTOZ_TYPE_IRESOURCE             (autoz_iresource_get_type ())
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IRESOURCE</NAME>
+#define AUTOZ_IRESOURCE(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_IRESOURCE, AutozIResource))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IS_IRESOURCE</NAME>
+#define AUTOZ_IS_IRESOURCE(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_IRESOURCE))
+</MACRO>
+<MACRO>
+<NAME>AUTOZ_IRESOURCE_GET_IFACE</NAME>
+#define AUTOZ_IRESOURCE_GET_IFACE(obj)   (G_TYPE_INSTANCE_GET_INTERFACE ((obj), AUTOZ_TYPE_IRESOURCE, AutozIResourceIface))
+</MACRO>
+<STRUCT>
+<NAME>AutozIResource</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozIResourceIface</NAME>
+</STRUCT>
+<STRUCT>
+<NAME>AutozIResourceIface</NAME>
+struct _AutozIResourceIface
+	{
+		GTypeInterface g_iface;
+
+		const gchar *(*get_resource_id) (AutozIResource *iresource);
+	};
+</STRUCT>
+<FUNCTION>
+<NAME>autoz_iresource_get_type</NAME>
+<RETURNS>GType </RETURNS>
+void 
+</FUNCTION>
+<FUNCTION>
+<NAME>autoz_iresource_get_resource_id</NAME>
+<RETURNS>const gchar *</RETURNS>
+AutozIResource *iresource 
+</FUNCTION>
+<MACRO>
 <NAME>AUTOZ_TYPE_ROLE</NAME>
 #define AUTOZ_TYPE_ROLE                 (autoz_role_get_type ())
 </MACRO>
@@ -195,47 +236,6 @@ void
 <NAME>autoz_role_new</NAME>
 <RETURNS>AutozRole *</RETURNS>
 const gchar *role_id 
-</FUNCTION>
-<MACRO>
-<NAME>AUTOZ_TYPE_IRESOURCE</NAME>
-#define AUTOZ_TYPE_IRESOURCE             (autoz_iresource_get_type ())
-</MACRO>
-<MACRO>
-<NAME>AUTOZ_IRESOURCE</NAME>
-#define AUTOZ_IRESOURCE(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_IRESOURCE, AutozIResource))
-</MACRO>
-<MACRO>
-<NAME>AUTOZ_IS_IRESOURCE</NAME>
-#define AUTOZ_IS_IRESOURCE(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_IRESOURCE))
-</MACRO>
-<MACRO>
-<NAME>AUTOZ_IRESOURCE_GET_IFACE</NAME>
-#define AUTOZ_IRESOURCE_GET_IFACE(obj)   (G_TYPE_INSTANCE_GET_INTERFACE ((obj), AUTOZ_TYPE_IRESOURCE, AutozIResourceIface))
-</MACRO>
-<STRUCT>
-<NAME>AutozIResource</NAME>
-</STRUCT>
-<STRUCT>
-<NAME>AutozIResourceIface</NAME>
-</STRUCT>
-<STRUCT>
-<NAME>AutozIResourceIface</NAME>
-struct _AutozIResourceIface
-	{
-		GTypeInterface g_iface;
-
-		const gchar *(*get_resource_id) (AutozIResource *iresource);
-	};
-</STRUCT>
-<FUNCTION>
-<NAME>autoz_iresource_get_type</NAME>
-<RETURNS>GType </RETURNS>
-void 
-</FUNCTION>
-<FUNCTION>
-<NAME>autoz_iresource_get_resource_id</NAME>
-<RETURNS>const gchar *</RETURNS>
-AutozIResource *iresource 
 </FUNCTION>
 <MACRO>
 <NAME>AUTOZ_TYPE_IROLE</NAME>
