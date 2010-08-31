@@ -1,0 +1,12 @@
+autoz_add_parent_to_resource
+autoz_add_parent_to_role
+autoz_add_parents_to_resource
+autoz_add_parents_to_role
+autoz_clear
+autoz_deny
+autoz_get_xml
+autoz_load_from_db
+autoz_load_from_xml
+autoz_resource_is_child
+autoz_role_is_child
+autoz_save_to_db

@@ -73,6 +73,11 @@ Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent
 Autoz *autoz, AutozIRole *irole, ... 
 </FUNCTION>
 <FUNCTION>
+<NAME>autoz_role_is_child</NAME>
+<RETURNS>gboolean </RETURNS>
+Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent 
+</FUNCTION>
+<FUNCTION>
 <NAME>autoz_get_role_from_id</NAME>
 <RETURNS>AutozIRole *</RETURNS>
 Autoz *autoz, const gchar *role_id 
@@ -98,6 +103,11 @@ Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent
 Autoz *autoz, AutozIResource *iresource, ... 
 </FUNCTION>
 <FUNCTION>
+<NAME>autoz_resource_is_child</NAME>
+<RETURNS>gboolean </RETURNS>
+Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent 
+</FUNCTION>
+<FUNCTION>
 <NAME>autoz_get_resource_from_id</NAME>
 <RETURNS>AutozIResource *</RETURNS>
 Autoz *autoz, const gchar *resource_id 
@@ -115,7 +125,7 @@ Autoz *autoz, AutozIRole *irole, AutozIResource *iresource
 <FUNCTION>
 <NAME>autoz_is_allowed</NAME>
 <RETURNS>gboolean </RETURNS>
-Autoz *autoz, AutozIRole *irole, AutozIResource *iresource 
+Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gboolean exclude_null 
 </FUNCTION>
 <FUNCTION>
 <NAME>autoz_clear</NAME>

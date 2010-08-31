@@ -32,7 +32,7 @@ main (int argc, char **argv)
 
 	autoz = autoz_new ();
 
-	if (argc == 0)
+	if (argc <= 1)
 		{
 			g_error ("You must specified an xml file to load.");
 			return 0;
@@ -59,21 +59,33 @@ main (int argc, char **argv)
 		}
 
 	g_message ("super-admin %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), autoz_get_resource_from_id (autoz, "page")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), autoz_get_resource_from_id (autoz, "page"), FALSE) ? "is" : "isn't"));
 	g_message ("super-admin %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), autoz_get_resource_from_id (autoz, "paragraph")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), autoz_get_resource_from_id (autoz, "paragraph"), FALSE) ? "is" : "isn't"));
+	g_message ("super-admin %s allowed to paragraph (exclude_null).",
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), autoz_get_resource_from_id (autoz, "paragraph"), TRUE) ? "is" : "isn't"));
 	g_message ("writer %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer"), autoz_get_resource_from_id (autoz, "page")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer"), autoz_get_resource_from_id (autoz, "page"), FALSE) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer-child"), autoz_get_resource_from_id (autoz, "page")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer-child"), autoz_get_resource_from_id (autoz, "page"), FALSE) ? "is" : "isn't"));
 	g_message ("writer %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer"), autoz_get_resource_from_id (autoz, "paragraph")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer"), autoz_get_resource_from_id (autoz, "paragraph"), FALSE) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer-child"), autoz_get_resource_from_id (autoz, "paragraph")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer-child"), autoz_get_resource_from_id (autoz, "paragraph"), FALSE) ? "is" : "isn't"));
 	g_message ("read-only %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "read-only"), autoz_get_resource_from_id (autoz, "page")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "read-only"), autoz_get_resource_from_id (autoz, "page"), FALSE) ? "is" : "isn't"));
 	g_message ("read-only %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "read-only"), autoz_get_resource_from_id (autoz, "paragraph")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "read-only"), autoz_get_resource_from_id (autoz, "paragraph"), FALSE) ? "is" : "isn't"));
+
+	g_message ("writer-child %s child of writer",
+	           (autoz_role_is_child (autoz, autoz_get_role_from_id (autoz, "writer-child"), autoz_get_role_from_id (autoz, "writer")) ? "is" : "isn't"));
+	g_message ("read-only %s child of super-admin",
+	           (autoz_role_is_child (autoz, autoz_get_role_from_id (autoz, "read-only"), autoz_get_role_from_id (autoz, "super-admin")) ? "is" : "isn't"));
+
+	g_message ("page %s child of paragraph",
+	           (autoz_resource_is_child (autoz, autoz_get_resource_from_id (autoz, "page"), autoz_get_resource_from_id (autoz, "paragraph")) ? "is" : "isn't"));
+	g_message ("paragraph %s child of page",
+	           (autoz_resource_is_child (autoz, autoz_get_resource_from_id (autoz, "paragraph"), autoz_get_resource_from_id (autoz, "page")) ? "is" : "isn't"));
 
 	return 0;
 }

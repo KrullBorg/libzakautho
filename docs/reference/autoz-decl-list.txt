@@ -75,11 +75,13 @@ autoz_add_role
 autoz_add_role_with_parents
 autoz_add_parent_to_role
 autoz_add_parents_to_role
+autoz_role_is_child
 autoz_get_role_from_id
 autoz_add_resource
 autoz_add_resource_with_parents
 autoz_add_parent_to_resource
 autoz_add_parents_to_resource
+autoz_resource_is_child
 autoz_get_resource_from_id
 autoz_allow
 autoz_deny

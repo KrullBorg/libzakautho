@@ -84,21 +84,21 @@ main (int argc, char **argv)
 		}
 
 	g_message ("super-admin %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), autoz_get_resource_from_id (autoz, "page")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), autoz_get_resource_from_id (autoz, "page"), FALSE) ? "is" : "isn't"));
 	g_message ("super-admin %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), autoz_get_resource_from_id (autoz, "paragraph")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), autoz_get_resource_from_id (autoz, "paragraph"), FALSE) ? "is" : "isn't"));
 	g_message ("writer %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer"), autoz_get_resource_from_id (autoz, "page")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer"), autoz_get_resource_from_id (autoz, "page"), FALSE) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer-child"), autoz_get_resource_from_id (autoz, "page")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer-child"), autoz_get_resource_from_id (autoz, "page"), FALSE) ? "is" : "isn't"));
 	g_message ("writer %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer"), autoz_get_resource_from_id (autoz, "paragraph")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer"), autoz_get_resource_from_id (autoz, "paragraph"), FALSE) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer-child"), autoz_get_resource_from_id (autoz, "paragraph")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "writer-child"), autoz_get_resource_from_id (autoz, "paragraph"), FALSE) ? "is" : "isn't"));
 	g_message ("read-only %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "read-only"), autoz_get_resource_from_id (autoz, "page")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "read-only"), autoz_get_resource_from_id (autoz, "page"), FALSE) ? "is" : "isn't"));
 	g_message ("read-only %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "read-only"), autoz_get_resource_from_id (autoz, "paragraph")) ? "is" : "isn't"));
+	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "read-only"), autoz_get_resource_from_id (autoz, "paragraph"), FALSE) ? "is" : "isn't"));
 
 	return 0;
 }

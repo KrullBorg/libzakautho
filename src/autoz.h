@@ -63,6 +63,8 @@ void autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...);
 void autoz_add_parent_to_role (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent);
 void autoz_add_parents_to_role (Autoz *autoz, AutozIRole *irole, ...);
 
+gboolean autoz_role_is_child (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent);
+
 AutozIRole *autoz_get_role_from_id (Autoz *autoz, const gchar *role_id);
 
 void autoz_add_resource (Autoz *autoz, AutozIResource *iresource);
@@ -70,12 +72,14 @@ void autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, .
 void autoz_add_parent_to_resource (Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent);
 void autoz_add_parents_to_resource (Autoz *autoz, AutozIResource *iresource, ...);
 
+gboolean autoz_resource_is_child (Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent);
+
 AutozIResource *autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id);
 
 void autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
 void autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
 
-gboolean autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
+gboolean autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gboolean exclude_null);
 
 gboolean autoz_clear (Autoz *autoz);
 

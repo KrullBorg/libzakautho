@@ -1,0 +1,59 @@
+2% symbol docs coverage.
+1 symbols documented.
+5 symbols incomplete.
+51 not documented.
+
+
+AUTOZ
+AUTOZ_CLASS
+AUTOZ_GET_CLASS
+Autoz
+AutozClass (<items>)
+AutozIResource
+AutozIResourceIface (<items>)
+AutozIRole
+AutozIRoleIface (<items>)
+AutozResource
+AutozResourceClass (<items>)
+AutozRole
+AutozRoleClass (<items>)
+IS_AUTOZ
+IS_AUTOZ_CLASS
+TYPE_AUTOZ
+autoz_add_parent_to_resource
+autoz_add_parent_to_role
+autoz_add_parents_to_resource
+autoz_add_parents_to_role
+autoz_add_resource
+autoz_add_resource_with_parents
+autoz_add_role
+autoz_add_role_with_parents
+autoz_allow
+autoz_clear
+autoz_deny
+autoz_get_resource_from_id
+autoz_get_role_from_id
+autoz_get_type
+autoz_get_xml
+autoz_iresource_get_resource_id
+autoz_irole_get_role_id
+autoz_is_allowed
+autoz_load_fro_xml
+autoz_load_from_db
+autoz_new
+autoz_resource_is_child
+autoz_resource_new
+autoz_role_is_child
+autoz_role_new
+autoz_save_to_db
+
+
+autoz:Short_Description
+resource:Long_Description
+resource:Short_Description
+resource_interface:Long_Description
+resource_interface:Short_Description
+role:Long_Description
+role:Short_Description
+role_interface:Long_Description
+role_interface:Short_Description
