@@ -1,6 +1,7 @@
 LIBS = $(AUTOZ_LIBS)
 
-AM_CPPFLAGS = $(AUTOZ_CFLAGS)
+AM_CPPFLAGS = $(AUTOZ_CFLAGS) \
+              -DG_LOG_DOMAIN=\"Autoz\"
 
 lib_LTLIBRARIES = libautoz.la
 

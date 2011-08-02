@@ -1778,7 +1778,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 		}
 	else
 		{
-			prefix = g_strdup (table_name);
+			prefix = g_strdup (table_prefix);
 		}
 
 	/* roles */
@@ -1787,7 +1787,8 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	sql = g_strdup_printf ("SELECT role_id FROM %s ORDER BY id",
 	                       table_name);
 	dm = gda_execute_select_command (gdacon, sql, &error);
-	if (dm != NULL)
+	g_free (sql);
+	if (dm != NULL && error == NULL)
 		{
 			rows = gda_data_model_get_n_rows (dm);
 			for (row = 0; row < rows; row++)
@@ -1796,6 +1797,8 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 					irole = AUTOZ_IROLE (autoz_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
 					autoz_add_role (autoz, irole);
 				}
+
+			g_object_unref (dm);
 		}
 	else if (error != NULL)
 		{
@@ -1815,16 +1818,20 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	                       prefix,
 	                       prefix);
 	dm = gda_execute_select_command (gdacon, sql, &error);
-	if (dm != NULL)
+	g_free (sql);
+	if (dm != NULL && error == NULL)
 		{
 			rows = gda_data_model_get_n_rows (dm);
 			for (row = 0; row < rows; row++)
 				{
 					error = NULL;
 					irole = AUTOZ_IROLE (autoz_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					error = NULL;
 					irole_parent = AUTOZ_IROLE (autoz_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 1, row, &error))));
 					autoz_add_parent_to_role (autoz, irole, irole_parent);
 				}
+
+			g_object_unref (dm);
 		}
 	else if (error != NULL)
 		{
@@ -1838,7 +1845,8 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	sql = g_strdup_printf ("SELECT resource_id FROM %s ORDER BY id",
 	                       table_name);
 	dm = gda_execute_select_command (gdacon, sql, &error);
-	if (dm != NULL)
+	g_free (sql);
+	if (dm != NULL && error == NULL)
 		{
 			rows = gda_data_model_get_n_rows (dm);
 			for (row = 0; row < rows; row++)
@@ -1847,6 +1855,8 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 					iresource = AUTOZ_IRESOURCE (autoz_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
 					autoz_add_resource (autoz, iresource);
 				}
+
+			g_object_unref (dm);
 		}
 	else if (error != NULL)
 		{
@@ -1866,16 +1876,20 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	                       prefix,
 	                       prefix);
 	dm = gda_execute_select_command (gdacon, sql, &error);
-	if (dm != NULL)
+	g_free (sql);
+	if (dm != NULL && error == NULL)
 		{
 			rows = gda_data_model_get_n_rows (dm);
 			for (row = 0; row < rows; row++)
 				{
 					error = NULL;
 					iresource = AUTOZ_IRESOURCE (autoz_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					error = NULL;
 					iresource_parent = AUTOZ_IRESOURCE (autoz_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 1, row, &error))));
 					autoz_add_parent_to_resource (autoz, iresource, iresource_parent);
 				}
+
+			g_object_unref (dm);
 		}
 	else if (error != NULL)
 		{
@@ -1894,7 +1908,8 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	                       prefix,
 	                       prefix);
 	dm = gda_execute_select_command (gdacon, sql, &error);
-	if (dm != NULL)
+	g_free (sql);
+	if (dm != NULL && error == NULL)
 		{
 			rows = gda_data_model_get_n_rows (dm);
 			for (row = 0; row < rows; row++)
@@ -1912,9 +1927,15 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 							irole = autoz_get_role_from_id (autoz, role_id);
 							if (irole != NULL)
 								{
+									error = NULL;
 									gval = gda_data_model_get_value_at (dm, 2, row, &error);
 									if (gval == NULL || gda_value_is_null (gval))
 										{
+											if (error != NULL)
+												{
+													g_warning ("Error on reading resource value: %s",
+													           error != NULL && error->message != NULL ? error->message : "no details");
+												}
 											iresource = NULL;
 										}
 									else
@@ -1923,6 +1944,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 											iresource = autoz_get_resource_from_id (autoz, resource_id);
 										}
 
+									error = NULL;
 									gval = gda_data_model_get_value_at (dm, 0, row, &error);
 									if (gval == NULL || error != NULL)
 										{
@@ -1948,6 +1970,8 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 								}
 						}
 				}
+
+			g_object_unref (dm);
 		}
 	else if (error != NULL)
 		{
@@ -1955,18 +1979,19 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 			           error->message != NULL ? error->message : "no details");
 		}
 
+	g_free (prefix);
+
 	return ret;
 }
 
 /* PRIVATE */
 static void
 autoz_set_property (GObject *object,
-                   guint property_id,
-                   const GValue *value,
-                   GParamSpec *pspec)
+                    guint property_id,
+                    const GValue *value,
+                    GParamSpec *pspec)
 {
 	Autoz *autoz = (Autoz *)object;
-
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
 	switch (property_id)
@@ -1979,12 +2004,11 @@ autoz_set_property (GObject *object,
 
 static void
 autoz_get_property (GObject *object,
-                   guint property_id,
-                   GValue *value,
-                   GParamSpec *pspec)
+                    guint property_id,
+                    GValue *value,
+                    GParamSpec *pspec)
 {
 	Autoz *autoz = (Autoz *)object;
-
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
 	switch (property_id)
