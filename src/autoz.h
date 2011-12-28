@@ -88,6 +88,7 @@ gboolean autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace);
 
 gboolean autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
 gboolean autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
+gboolean autoz_load_from_db_with_monitor (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
 
 
 G_END_DECLS
