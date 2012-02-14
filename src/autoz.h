@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2012 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,6 +57,11 @@ GType autoz_get_type (void) G_GNUC_CONST;
 
 
 Autoz *autoz_new (void);
+
+void autoz_set_role_name_prefix (Autoz *autoz, const gchar *prefix);
+const gchar *autoz_get_role_name_prefix (Autoz *autoz);
+void autoz_set_resource_name_prefix (Autoz *autoz, const gchar *prefix);
+const gchar *autoz_get_resource_name_prefix (Autoz *autoz);
 
 void autoz_add_role (Autoz *autoz, AutozIRole *irole);
 void autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...);

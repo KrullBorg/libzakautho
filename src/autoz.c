@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2012 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@
 #endif
 
 #include <stdarg.h>
+#include <string.h>
 
 #include "autoz.h"
 
@@ -68,6 +69,12 @@ static guint _autoz_get_resource_id_db (GdaConnection *gdacon, const gchar *tabl
 
 static void _autoz_check_updated (Autoz *autoz);
 
+static Role *_autoz_get_role_from_id (Autoz *autoz, const gchar *role_id);
+static Resource *_autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id);
+
+static gchar *_autoz_remove_role_name_prefix_from_id (Autoz *autoz, const gchar *role_id);
+static gchar *_autoz_remove_resource_name_prefix_from_id (Autoz *autoz, const gchar *resource_id);
+
 static void autoz_set_property (GObject *object,
                                guint property_id,
                                const GValue *value,
@@ -82,6 +89,9 @@ static void autoz_get_property (GObject *object,
 typedef struct _AutozPrivate AutozPrivate;
 struct _AutozPrivate
 	{
+		gchar *role_name_prefix;
+		gchar *resource_name_prefix;
+
 		GHashTable *roles; /* struct Role */
 		GHashTable *resources; /* struct Resource */
 
@@ -112,6 +122,9 @@ autoz_init (Autoz *autoz)
 {
 	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
 
+	priv->role_name_prefix = NULL;
+	priv->resource_name_prefix = NULL;
+
 	priv->roles = g_hash_table_new (g_str_hash, g_str_equal);
 	priv->resources = g_hash_table_new (g_str_hash, g_str_equal);
 
@@ -136,6 +149,100 @@ Autoz
 }
 
 /**
+ * autoz_set_role_name_prefix:
+ * @autoz: an #Autoz object.
+ * @prefix:
+ *
+ */
+void
+autoz_set_role_name_prefix (Autoz *autoz, const gchar *prefix)
+{
+	AutozPrivate *priv;
+
+	g_return_if_fail (IS_AUTOZ (autoz));
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	if (priv->role_name_prefix != NULL)
+		{
+			g_free (priv->role_name_prefix);
+		}
+
+	if (prefix == NULL)
+		{
+			priv->role_name_prefix = NULL;
+		}
+	else
+		{
+			priv->role_name_prefix = g_strdup (prefix);
+		}
+}
+
+/**
+ * autoz_get_role_name_prefix:
+ * @autoz: an #Autoz object.
+ *
+ */
+const gchar
+*autoz_get_role_name_prefix (Autoz *autoz)
+{
+	AutozPrivate *priv;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	return priv->role_name_prefix == NULL ? NULL : g_strdup (priv->role_name_prefix);
+}
+
+/**
+ * autoz_set_resource_name_prefix:
+ * @autoz: an #Autoz object.
+ * @prefix:
+ *
+ */
+void
+autoz_set_resource_name_prefix (Autoz *autoz, const gchar *prefix)
+{
+	AutozPrivate *priv;
+
+	g_return_if_fail (IS_AUTOZ (autoz));
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	if (priv->resource_name_prefix != NULL)
+		{
+			g_free (priv->resource_name_prefix);
+		}
+
+	if (prefix == NULL)
+		{
+			priv->resource_name_prefix = NULL;
+		}
+	else
+		{
+			priv->resource_name_prefix = g_strdup (prefix);
+		}
+}
+
+/**
+ * autoz_get_resource_name_prefix:
+ * @autoz: an #Autoz object.
+ *
+ */
+const gchar
+*autoz_get_resource_name_prefix (Autoz *autoz)
+{
+	AutozPrivate *priv;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	return priv->resource_name_prefix == NULL ? NULL : g_strdup (priv->resource_name_prefix);
+}
+
+/**
  * autoz_add_role:
  * @autoz: an #Autoz object.
  * @irole:
@@ -157,13 +264,15 @@ autoz_add_role (Autoz *autoz, AutozIRole *irole)
 void
 autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 {
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	AutozPrivate *priv;
 
 	const gchar *role_id;
 	const gchar *role_id_parent;
 
 	g_return_if_fail (IS_AUTOZ (autoz));
 	g_return_if_fail (AUTOZ_IS_IROLE (irole));
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
 
 	role_id = autoz_irole_get_role_id (irole);
 
@@ -188,7 +297,7 @@ autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 							g_warning ("The parent cannot be himself (%s).", role_id);
 						}
 					else
-						{					
+						{
 							role_parent = g_hash_table_lookup (priv->roles, role_id_parent);
 							if (role_parent != NULL)
 								{
@@ -343,6 +452,35 @@ autoz_role_is_child (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent)
 	return ret;
 }
 
+static Role
+*_autoz_get_role_from_id (Autoz *autoz, const gchar *role_id)
+{
+	AutozPrivate *priv;
+	Role *role;
+
+	gchar *_role_id;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+
+	_autoz_check_updated (autoz);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	if (priv->role_name_prefix != NULL)
+		{
+			_role_id = g_strdup_printf ("%s%s", priv->role_name_prefix, role_id);
+		}
+	else
+		{
+			_role_id = g_strdup (role_id);
+		}
+
+	role = g_hash_table_lookup (priv->roles, _role_id);
+	g_free (_role_id);
+
+	return role;
+}
+
 /**
  * autoz_get_role_from_id:
  * @autoz: an #Autoz object.
@@ -352,16 +490,9 @@ autoz_role_is_child (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent)
 AutozIRole
 *autoz_get_role_from_id (Autoz *autoz, const gchar *role_id)
 {
-	AutozPrivate *priv;
 	Role *role;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
-
-	_autoz_check_updated (autoz);
-
-	priv = AUTOZ_GET_PRIVATE (autoz);
-
-	role = g_hash_table_lookup (priv->roles, role_id);
+	role = _autoz_get_role_from_id (autoz, role_id);
 	if (role == NULL)
 		{
 			return NULL;
@@ -580,6 +711,35 @@ autoz_resource_is_child (Autoz *autoz, AutozIResource *iresource, AutozIResource
 	return ret;
 }
 
+static Resource
+*_autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id)
+{
+	AutozPrivate *priv;
+	Resource *resource;
+
+	gchar *_resource_id;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+
+	_autoz_check_updated (autoz);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	if (priv->resource_name_prefix != NULL)
+		{
+			_resource_id = g_strdup_printf ("%s%s", priv->resource_name_prefix, resource_id);
+		}
+	else
+		{
+			_resource_id = g_strdup (resource_id);
+		}
+
+	resource = g_hash_table_lookup (priv->resources, _resource_id);
+	g_free (_resource_id);
+
+	return resource;
+}
+
 /**
  * autoz_get_resource_from_id:
  * @autoz: an #Autoz object.
@@ -589,16 +749,9 @@ autoz_resource_is_child (Autoz *autoz, AutozIResource *iresource, AutozIResource
 AutozIResource
 *autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id)
 {
-	AutozPrivate *priv;
 	Resource *resource;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
-
-	_autoz_check_updated (autoz);
-
-	priv = AUTOZ_GET_PRIVATE (autoz);
-
-	resource = g_hash_table_lookup (priv->resources, resource_id);
+	resource = _autoz_get_resource_from_id (autoz, resource_id);
 	if (resource == NULL)
 		{
 			return NULL;
@@ -867,6 +1020,58 @@ _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource)
 	return ret;
 }
 
+static gchar
+*_autoz_remove_role_name_prefix_from_id (Autoz *autoz, const gchar *role_id)
+{
+	gchar *ret;
+
+	AutozPrivate *priv;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = NULL;
+
+	if (priv->role_name_prefix == NULL
+	    || strlen (priv->role_name_prefix) > strlen (role_id))
+		{
+			ret = g_strdup (role_id);
+		}
+	else
+		{
+			ret = g_strdup (role_id + strlen (priv->role_name_prefix));
+		}
+
+	return ret;
+}
+
+static gchar
+*_autoz_remove_resource_name_prefix_from_id (Autoz *autoz, const gchar *resource_id)
+{
+	gchar *ret;
+
+	AutozPrivate *priv;
+
+	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+
+	priv = AUTOZ_GET_PRIVATE (autoz);
+
+	ret = NULL;
+
+	if (priv->resource_name_prefix == NULL
+	    || strlen (priv->resource_name_prefix) > strlen (resource_id))
+		{
+			ret = g_strdup (resource_id);
+		}
+	else
+		{
+			ret = g_strdup (resource_id + strlen (priv->resource_name_prefix));
+		}
+
+	return ret;
+}
+
 /**
  * autoz_is_allowed:
  * @autoz: an #Autoz object.
@@ -898,13 +1103,14 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 	ret = FALSE;
 	isAllowed = AUTOZ_NOT_FOUND;
 
-	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
+	role = _autoz_get_role_from_id (autoz, _autoz_remove_role_name_prefix_from_id (autoz, autoz_irole_get_role_id (irole)));
 	if (role == NULL)
 		{
 			g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole));
 			return ret;
 		}
-	resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+
+	resource = _autoz_get_resource_from_id (autoz, _autoz_remove_resource_name_prefix_from_id (autoz, autoz_iresource_get_resource_id (iresource)));
 	if (resource == NULL)
 		{
 			g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource));
@@ -914,7 +1120,7 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 	if (!exclude_null)
 		{
 			/* first trying for a rule for every resource */
-			str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+			str_id = g_strconcat (autoz_irole_get_role_id (irole),
 			                      "|NULL",
 			                      NULL);
 
@@ -931,9 +1137,9 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 		}
 
 	/* and after for specific resource */
-	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+	str_id = g_strconcat (autoz_irole_get_role_id (irole),
 	                      "|",
-	                      autoz_iresource_get_resource_id (resource->iresource),
+	                      autoz_iresource_get_resource_id (iresource),
 	                      NULL);
 
 	if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
@@ -1206,6 +1412,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 									if (g_strcmp0 (prop, "") != 0)
 										{
 											irole = AUTOZ_IROLE (autoz_role_new (prop));
+											g_free (prop);
 											autoz_add_role (autoz, irole);
 
 											current_parent = current->children;
@@ -1219,6 +1426,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 																{
 																	autoz_add_parent_to_role (autoz, irole,  autoz_get_role_from_id (autoz, prop));
 																}
+															g_free (prop);
 														}
 													current_parent = current_parent->next;
 												}
@@ -1231,6 +1439,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 										{
 											iresource = AUTOZ_IRESOURCE (autoz_resource_new (prop));
 											autoz_add_resource (autoz, iresource);
+											g_free (prop);
 
 											current_parent = current->children;
 											while (current_parent != NULL)
@@ -1243,6 +1452,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 																{
 																	autoz_add_parent_to_resource (autoz, iresource, autoz_get_resource_from_id (autoz, prop));
 																}
+															g_free (prop);
 														}
 													current_parent = current_parent->next;
 												}
@@ -1263,6 +1473,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 												{
 													iresource = autoz_get_resource_from_id (autoz, prop);
 												}
+											g_free (prop);
 
 											prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "allow")));
 											if (g_strcmp0 (prop, "yes") == 0)
@@ -1273,6 +1484,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 												{
 													autoz_deny (autoz, irole, iresource);
 												}
+											g_free (prop);
 										}
 								}
 						}
