@@ -1095,7 +1095,6 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 
 	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
 	g_return_val_if_fail (AUTOZ_IS_IROLE (irole), FALSE);
-	g_return_val_if_fail (AUTOZ_IS_IRESOURCE (iresource), FALSE);
 
 	_autoz_check_updated (autoz);
 
@@ -1107,13 +1106,6 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 	if (role == NULL)
 		{
 			g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole));
-			return ret;
-		}
-
-	resource = _autoz_get_resource_from_id (autoz, _autoz_remove_resource_name_prefix_from_id (autoz, autoz_iresource_get_resource_id (iresource)));
-	if (resource == NULL)
-		{
-			g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource));
 			return ret;
 		}
 
@@ -1134,6 +1126,15 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 					ret = TRUE;
 					return ret;
 				}
+		}
+
+	g_return_val_if_fail (AUTOZ_IS_IRESOURCE (iresource), FALSE);
+
+	resource = _autoz_get_resource_from_id (autoz, _autoz_remove_resource_name_prefix_from_id (autoz, autoz_iresource_get_resource_id (iresource)));
+	if (resource == NULL)
+		{
+			g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource));
+			return ret;
 		}
 
 	/* and after for specific resource */
