@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2013 Andrea Zagli <azagli@libero.it>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,8 +27,6 @@ main (int argc, char **argv)
 
 	xmlDocPtr xdoc;
 	xmlNodePtr xnode;
-
-	g_type_init ();
 
 	autoz = autoz_new ();
 

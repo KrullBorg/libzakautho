@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.65)
-AC_INIT([libautoz], [0.0.2], [azagli@libero.it])
+AC_INIT([libautoz], [0.0.5], [azagli@libero.it])
 AC_CONFIG_SRCDIR([src/autoz.c])
 AC_CONFIG_HEADER([config.h])
 
@@ -32,10 +32,8 @@ AC_PROG_RANLIB
 GTK_DOC_CHECK
 
 # Checks for libraries.
-PKG_CHECK_MODULES(AUTOZ, [gobject-2.0 >= 2.24.0
-                          glib-2.0 >= 2.24.0
-                          libxml-2.0 >= 2.7
-                          libgda-4.0 >= 4.0.0])
+PKG_CHECK_MODULES(AUTOZ, [libxml-2.0 >= 2.7
+                          libgda-5.0 >= 5.0.0])
 
 AC_SUBST(AUTOZ_CFLAGS)
 AC_SUBST(AUTOZ_LIBS)

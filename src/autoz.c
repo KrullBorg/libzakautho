@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2013 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1509,7 +1509,7 @@ _autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix)
 
 	error = NULL;
 	sql = g_strdup_printf ("DELETE FROM %sroles", table_prefix);
-	gda_execute_non_select_command (gdacon, sql, &error);
+	gda_connection_execute_non_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (error != NULL)
 		{
@@ -1518,7 +1518,7 @@ _autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix)
 		}
 	error = NULL;
 	sql = g_strdup_printf ("DELETE FROM %sroles_parents", table_prefix);
-	gda_execute_non_select_command (gdacon, sql, &error);
+	gda_connection_execute_non_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (error != NULL)
 		{
@@ -1527,7 +1527,7 @@ _autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix)
 		}
 	error = NULL;
 	sql = g_strdup_printf ("DELETE FROM %sresources", table_prefix);
-	gda_execute_non_select_command (gdacon, sql, &error);
+	gda_connection_execute_non_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (error != NULL)
 		{
@@ -1536,7 +1536,7 @@ _autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix)
 		}
 	error = NULL;
 	sql = g_strdup_printf ("DELETE FROM %sresources_parents", table_prefix);
-	gda_execute_non_select_command (gdacon, sql, &error);
+	gda_connection_execute_non_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (error != NULL)
 		{
@@ -1545,7 +1545,7 @@ _autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix)
 		}
 	error = NULL;
 	sql = g_strdup_printf ("DELETE FROM %srules", table_prefix);
-	gda_execute_non_select_command (gdacon, sql, &error);
+	gda_connection_execute_non_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (error != NULL)
 		{
@@ -1568,7 +1568,7 @@ _autoz_find_new_table_id (GdaConnection *gdacon, const gchar *table_name)
 	error = NULL;
 	sql = g_strdup_printf ("SELECT COALESCE (MAX (id), 0) FROM %s",
 	                       table_name);
-	dm = gda_execute_select_command (gdacon, sql, &error);
+	dm = gda_connection_execute_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (dm != NULL && gda_data_model_get_n_rows (dm) == 1)
 		{
@@ -1606,7 +1606,7 @@ _autoz_get_role_id_db (GdaConnection *gdacon, const gchar *table_name, const gch
 	                       " WHERE role_id = '%s'",
 	                       table_name,
 	                       role_id);
-	dm = gda_execute_select_command (gdacon, sql, &error);
+	dm = gda_connection_execute_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (dm != NULL && gda_data_model_get_n_rows (dm) == 1)
 		{
@@ -1638,7 +1638,7 @@ _autoz_get_resource_id_db (GdaConnection *gdacon, const gchar *table_name, const
 	                       " WHERE resource_id = '%s'",
 	                       table_name,
 	                       resource_id);
-	dm = gda_execute_select_command (gdacon, sql, &error);
+	dm = gda_connection_execute_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (dm != NULL && gda_data_model_get_n_rows (dm) == 1)
 		{
@@ -1746,7 +1746,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 			                       table_name,
 			                       new_id,
 			                       autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
-			gda_execute_non_select_command (gdacon, sql, &error);
+			gda_connection_execute_non_select_command (gdacon, sql, &error);
 			g_free (sql);
 			if (error != NULL)
 				{
@@ -1771,7 +1771,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 							                       table_name_parent,
 							                       new_id,
 							                       id_parent);
-							gda_execute_non_select_command (gdacon, sql, &error);
+							gda_connection_execute_non_select_command (gdacon, sql, &error);
 							g_free (sql);
 							if (error != NULL)
 								{
@@ -1820,7 +1820,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 			                       table_name,
 			                       new_id,
 			                       autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
-			gda_execute_non_select_command (gdacon, sql, &error);
+			gda_connection_execute_non_select_command (gdacon, sql, &error);
 			g_free (sql);
 			if (error != NULL)
 				{
@@ -1845,7 +1845,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 							                       table_name_parent,
 							                       new_id,
 							                       id_parent);
-							gda_execute_non_select_command (gdacon, sql, &error);
+							gda_connection_execute_non_select_command (gdacon, sql, &error);
 							g_free (sql);
 							if (error != NULL)
 								{
@@ -1905,7 +1905,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 					                       new_id,
 					                       id_roles,
 					                       id_resources);
-					gda_execute_non_select_command (gdacon, sql, &error);
+					gda_connection_execute_non_select_command (gdacon, sql, &error);
 					g_free (sql);
 					if (error != NULL)
 						{
@@ -1948,7 +1948,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 					                       new_id,
 					                       id_roles,
 					                       id_resources);
-					gda_execute_non_select_command (gdacon, sql, &error);
+					gda_connection_execute_non_select_command (gdacon, sql, &error);
 					g_free (sql);
 					if (error != NULL)
 						{
@@ -2035,7 +2035,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	error = NULL;
 	sql = g_strdup_printf ("SELECT role_id FROM %sroles ORDER BY id",
 	                       prefix);
-	dm = gda_execute_select_command (gdacon, sql, &error);
+	dm = gda_connection_execute_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (dm != NULL && error == NULL)
 		{
@@ -2065,7 +2065,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	                       prefix,
 	                       prefix,
 	                       prefix);
-	dm = gda_execute_select_command (gdacon, sql, &error);
+	dm = gda_connection_execute_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (dm != NULL && error == NULL)
 		{
@@ -2091,7 +2091,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	error = NULL;
 	sql = g_strdup_printf ("SELECT resource_id FROM %sresources ORDER BY id",
 	                       prefix);
-	dm = gda_execute_select_command (gdacon, sql, &error);
+	dm = gda_connection_execute_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (dm != NULL && error == NULL)
 		{
@@ -2121,7 +2121,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	                       prefix,
 	                       prefix,
 	                       prefix);
-	dm = gda_execute_select_command (gdacon, sql, &error);
+	dm = gda_connection_execute_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (dm != NULL && error == NULL)
 		{
@@ -2152,7 +2152,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	                       prefix,
 	                       prefix,
 	                       prefix);
-	dm = gda_execute_select_command (gdacon, sql, &error);
+	dm = gda_connection_execute_select_command (gdacon, sql, &error);
 	g_free (sql);
 	if (dm != NULL && error == NULL)
 		{
@@ -2290,7 +2290,7 @@ _autoz_check_updated (Autoz *autoz)
 	error = NULL;
 	sql = g_strdup_printf ("SELECT update FROM %stimestamp_update",
 	                       priv->table_prefix);
-	dm = gda_execute_select_command (priv->gdacon, sql, &error);
+	dm = gda_connection_execute_select_command (priv->gdacon, sql, &error);
 	g_free (sql);
 	if (dm != NULL && error == NULL && gda_data_model_get_n_rows (dm) > 0)
 		{
