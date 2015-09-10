@@ -4,10 +4,10 @@ SUBDIRS = src tests docs
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = libautoz.pc.in
+EXTRA_DIST = libzakautho.pc.in
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libautoz.pc
+pkgconfig_DATA = libzakautho.pc
 
 distclean-local:
 	if test "$(srcdir)" = "."; then :; else \

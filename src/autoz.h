@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2015 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef __LIBAUTOZ_H__
-#define __LIBAUTOZ_H__
+#ifndef __LIB_ZAK_AUTHO_H__
+#define __LIB_ZAK_AUTHO_H__
 
 #include <glib.h>
 #include <glib-object.h>
@@ -32,71 +32,71 @@ G_BEGIN_DECLS
 #include "role_interface.h"
 #include "resource_interface.h"
 
-#define TYPE_AUTOZ                 (autoz_get_type ())
-#define AUTOZ(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_AUTOZ, Autoz))
-#define AUTOZ_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_AUTOZ, AutozClass))
-#define IS_AUTOZ(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_AUTOZ))
-#define IS_AUTOZ_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_AUTOZ))
-#define AUTOZ_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_AUTOZ, AutozClass))
+#define ZAK_TYPE_AUTHO                 (zak_autho_get_type ())
+#define ZAK_AUTHO(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), ZAK_TYPE_AUTHO, ZakAutho))
+#define ZAK_AUTHO_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), ZAK_TYPE_AUTHO, ZakAuthoClass))
+#define IS_ZAK_AUTHO(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), ZAK_TYPE_AUTHO))
+#define IS_ZAK_AUTHO_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), ZAK_TYPE_AUTHO))
+#define ZAK_AUTHO_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), ZAK_TYPE_AUTHO, ZakAuthoClass))
 
 
-typedef struct _Autoz Autoz;
-typedef struct _AutozClass AutozClass;
+typedef struct _ZakAutho ZakAutho;
+typedef struct _ZakAuthoClass ZakAuthoClass;
 
-struct _Autoz
+struct _ZakAutho
 	{
 		GObject parent;
 	};
 
-struct _AutozClass
+struct _ZakAuthoClass
 	{
 		GObjectClass parent_class;
 	};
 
-GType autoz_get_type (void) G_GNUC_CONST;
+GType zak_autho_get_type (void) G_GNUC_CONST;
 
 
-Autoz *autoz_new (void);
+ZakAutho *zak_autho_new (void);
 
-void autoz_set_role_name_prefix (Autoz *autoz, const gchar *prefix);
-const gchar *autoz_get_role_name_prefix (Autoz *autoz);
-void autoz_set_resource_name_prefix (Autoz *autoz, const gchar *prefix);
-const gchar *autoz_get_resource_name_prefix (Autoz *autoz);
+void zak_autho_set_role_name_prefix (ZakAutho *zak_autho, const gchar *prefix);
+const gchar *zak_autho_get_role_name_prefix (ZakAutho *zak_autho);
+void zak_autho_set_resource_name_prefix (ZakAutho *zak_autho, const gchar *prefix);
+const gchar *zak_autho_get_resource_name_prefix (ZakAutho *zak_autho);
 
-void autoz_add_role (Autoz *autoz, AutozIRole *irole);
-void autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...);
-void autoz_add_parent_to_role (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent);
-void autoz_add_parents_to_role (Autoz *autoz, AutozIRole *irole, ...);
+void zak_autho_add_role (ZakAutho *zak_autho, ZakAuthoIRole *irole);
+void zak_autho_add_role_with_parents (ZakAutho *zak_autho, ZakAuthoIRole *irole, ...);
+void zak_autho_add_parent_to_role (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIRole *irole_parent);
+void zak_autho_add_parents_to_role (ZakAutho *zak_autho, ZakAuthoIRole *irole, ...);
 
-gboolean autoz_role_is_child (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent);
+gboolean zak_autho_role_is_child (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIRole *irole_parent);
 
-AutozIRole *autoz_get_role_from_id (Autoz *autoz, const gchar *role_id);
+ZakAuthoIRole *zak_autho_get_role_from_id (ZakAutho *zak_autho, const gchar *role_id);
 
-void autoz_add_resource (Autoz *autoz, AutozIResource *iresource);
-void autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...);
-void autoz_add_parent_to_resource (Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent);
-void autoz_add_parents_to_resource (Autoz *autoz, AutozIResource *iresource, ...);
+void zak_autho_add_resource (ZakAutho *zak_autho, ZakAuthoIResource *iresource);
+void zak_autho_add_resource_with_parents (ZakAutho *zak_autho, ZakAuthoIResource *iresource, ...);
+void zak_autho_add_parent_to_resource (ZakAutho *zak_autho, ZakAuthoIResource *iresource, ZakAuthoIResource *iresource_parent);
+void zak_autho_add_parents_to_resource (ZakAutho *zak_autho, ZakAuthoIResource *iresource, ...);
 
-gboolean autoz_resource_is_child (Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent);
+gboolean zak_autho_resource_is_child (ZakAutho *zak_autho, ZakAuthoIResource *iresource, ZakAuthoIResource *iresource_parent);
 
-AutozIResource *autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id);
+ZakAuthoIResource *zak_autho_get_resource_from_id (ZakAutho *zak_autho, const gchar *resource_id);
 
-void autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
-void autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource);
+void zak_autho_allow (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIResource *iresource);
+void zak_autho_deny (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIResource *iresource);
 
-gboolean autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gboolean exclude_null);
+gboolean zak_autho_is_allowed (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIResource *iresource, gboolean exclude_null);
 
-gboolean autoz_clear (Autoz *autoz);
+gboolean zak_autho_clear (ZakAutho *zak_autho);
 
-xmlNodePtr autoz_get_xml (Autoz *autoz);
-gboolean autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace);
+xmlNodePtr zak_autho_get_xml (ZakAutho *zak_autho);
+gboolean zak_autho_load_from_xml (ZakAutho *zak_autho, xmlNodePtr xnode, gboolean replace);
 
-gboolean autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
-gboolean autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
-gboolean autoz_load_from_db_with_monitor (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
+gboolean zak_autho_save_to_db (ZakAutho *zak_autho, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
+gboolean zak_autho_load_from_db (ZakAutho *zak_autho, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
+gboolean zak_autho_load_from_db_with_monitor (ZakAutho *zak_autho, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace);
 
 
 G_END_DECLS
 
 
-#endif /* __LIBAUTOZ_H__ */
+#endif /* __LIB_ZAK_AUTHO_H__ */

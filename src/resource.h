@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2015 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef __LIBAUTOZ_RESOURCE_H__
-#define __LIBAUTOZ_RESOURCE_H__
+#ifndef __LIB_ZAK_AUTHO_RESOURCE_H__
+#define __LIB_ZAK_AUTHO_RESOURCE_H__
 
 #include <glib.h>
 #include <glib-object.h>
@@ -26,34 +26,34 @@
 G_BEGIN_DECLS
 
 
-#define AUTOZ_TYPE_RESOURCE                 (autoz_resource_get_type ())
-#define AUTOZ_RESOURCE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_RESOURCE, AutozResource))
-#define AUTOZ_RESOURCE_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), AUTOZ_TYPE_RESOURCE, AutozResourceClass))
-#define AUTOZ_IS_RESOURCE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_RESOURCE))
-#define AUTOZ_IS_RESOURCE_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), AUTOZ_TYPE_RESOURCE))
-#define AUTOZ_RESOURCE_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), AUTOZ_TYPE_RESOURCE, AutozResourceClass))
+#define ZAK_AUTHO_TYPE_RESOURCE                 (zak_autho_resource_get_type ())
+#define ZAK_AUTHO_RESOURCE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), ZAK_AUTHO_TYPE_RESOURCE, ZakAuthoResource))
+#define ZAK_AUTHO_RESOURCE_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), ZAK_AUTHO_TYPE_RESOURCE, ZakAuthoResourceClass))
+#define ZAK_AUTHO_IS_RESOURCE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), ZAK_AUTHO_TYPE_RESOURCE))
+#define ZAK_AUTHO_IS_RESOURCE_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), ZAK_AUTHO_TYPE_RESOURCE))
+#define ZAK_AUTHO_RESOURCE_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), ZAK_AUTHO_TYPE_RESOURCE, ZakAuthoResourceClass))
 
 
-typedef struct _AutozResource AutozResource;
-typedef struct _AutozResourceClass AutozResourceClass;
+typedef struct _ZakAuthoResource ZakAuthoResource;
+typedef struct _ZakAuthoResourceClass ZakAuthoResourceClass;
 
-struct _AutozResource
+struct _ZakAuthoResource
 	{
 		GObject parent;
 	};
 
-struct _AutozResourceClass
+struct _ZakAuthoResourceClass
 	{
 		GObjectClass parent_class;
 	};
 
-GType autoz_resource_get_type (void) G_GNUC_CONST;
+GType zak_autho_resource_get_type (void) G_GNUC_CONST;
 
 
-AutozResource *autoz_resource_new (const gchar *resource_id);
+ZakAuthoResource *zak_autho_resource_new (const gchar *resource_id);
 
 
 G_END_DECLS
 
 
-#endif /* __LIBAUTOZ_RESOURCE_H__ */
+#endif /* __LIBZAK_AUTHO_RESOURCE_H__ */

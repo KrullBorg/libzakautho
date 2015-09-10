@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2015 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,26 +22,26 @@
 
 #include "role_interface.h"
 
-typedef AutozIRoleIface AutozIRoleInterface;
-G_DEFINE_INTERFACE (AutozIRole, autoz_irole, G_TYPE_OBJECT)
+typedef ZakAuthoIRoleIface ZakAuthoIRoleInterface;
+G_DEFINE_INTERFACE (ZakAuthoIRole, zak_autho_irole, G_TYPE_OBJECT)
 
 static void
-autoz_irole_default_init (AutozIRoleInterface *iface)
+zak_autho_irole_default_init (ZakAuthoIRoleInterface *iface)
 {
 }
 
 const gchar
-*autoz_irole_get_role_id (AutozIRole *irole)
+*zak_autho_irole_get_role_id (ZakAuthoIRole *irole)
 {
-	AutozIRoleIface *iface;
+	ZakAuthoIRoleIface *iface;
 
 	gchar *ret;
 
 	ret = NULL;
 
-	g_return_val_if_fail (AUTOZ_IS_IROLE (irole), ret);
+	g_return_val_if_fail (ZAK_AUTHO_IS_IROLE (irole), ret);
 
-	iface = AUTOZ_IROLE_GET_IFACE (irole);
+	iface = ZAK_AUTHO_IROLE_GET_IFACE (irole);
 
 	if (iface->get_role_id)
 		{

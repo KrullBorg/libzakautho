@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2015 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,72 +23,72 @@
 #include "role.h"
 #include "role_interface.h"
 
-static void autoz_role_class_init (AutozRoleClass *class);
-static void autoz_role_init (AutozRole *role);
+static void zak_autho_role_class_init (ZakAuthoRoleClass *class);
+static void zak_autho_role_init (ZakAuthoRole *role);
 
-static void autoz_irole_interface_init (AutozIRoleIface *iface);
+static void zak_autho_irole_interface_init (ZakAuthoIRoleIface *iface);
 
-static const gchar *autoz_role_get_role_id (AutozIRole *irole);
+static const gchar *zak_autho_role_get_role_id (ZakAuthoIRole *irole);
 
-static void autoz_role_set_property (GObject *object,
+static void zak_autho_role_set_property (GObject *object,
                                guint property_id,
                                const GValue *value,
                                GParamSpec *pspec);
-static void autoz_role_get_property (GObject *object,
+static void zak_autho_role_get_property (GObject *object,
                                guint property_id,
                                GValue *value,
                                GParamSpec *pspec);
 
-#define AUTOZ_ROLE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), AUTOZ_TYPE_ROLE, AutozRolePrivate))
+#define ZAK_AUTHO_ROLE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ZAK_AUTHO_TYPE_ROLE, ZakAuthoRolePrivate))
 
-typedef struct _AutozRolePrivate AutozRolePrivate;
-struct _AutozRolePrivate
+typedef struct _ZakAuthoRolePrivate ZakAuthoRolePrivate;
+struct _ZakAuthoRolePrivate
 	{
 		gchar *role_id;
 	};
 
-G_DEFINE_TYPE_WITH_CODE (AutozRole, autoz_role, G_TYPE_OBJECT,
-                         G_IMPLEMENT_INTERFACE (AUTOZ_TYPE_IROLE,
-                                                autoz_irole_interface_init));
+G_DEFINE_TYPE_WITH_CODE (ZakAuthoRole, zak_autho_role, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (ZAK_AUTHO_TYPE_IROLE,
+                                                zak_autho_irole_interface_init));
 
 static void
-autoz_role_class_init (AutozRoleClass *class)
+zak_autho_role_class_init (ZakAuthoRoleClass *class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (class);
 
-	object_class->set_property = autoz_role_set_property;
-	object_class->get_property = autoz_role_get_property;
+	object_class->set_property = zak_autho_role_set_property;
+	object_class->get_property = zak_autho_role_get_property;
 
-	g_type_class_add_private (object_class, sizeof (AutozRolePrivate));
+	g_type_class_add_private (object_class, sizeof (ZakAuthoRolePrivate));
 }
 
 static void
-autoz_role_init (AutozRole *form)
+zak_autho_role_init (ZakAuthoRole *form)
 {
-	AutozRolePrivate *priv = AUTOZ_ROLE_GET_PRIVATE (form);
+	ZakAuthoRolePrivate *priv = ZAK_AUTHO_ROLE_GET_PRIVATE (form);
 }
 
 static void
-autoz_irole_interface_init (AutozIRoleIface *iface)
+zak_autho_irole_interface_init (ZakAuthoIRoleIface *iface)
 {
-	iface->get_role_id = autoz_role_get_role_id;
+	iface->get_role_id = zak_autho_role_get_role_id;
 }
 
 /**
- * autoz_role_new:
+ * zak_autho_role_new:
  * @role_id:
  *
- * Returns: the newly created #AutozRole object.
+ * Returns: the newly created #ZakAuthoRole object.
  */
-AutozRole
-*autoz_role_new (const gchar *role_id)
+ZakAuthoRole
+*zak_autho_role_new (const gchar *role_id)
 {
-	AutozRole *role;
-	AutozRolePrivate *priv;
+	ZakAuthoRole *role;
+	ZakAuthoRolePrivate *priv;
 
-	role = AUTOZ_ROLE (g_object_new (autoz_role_get_type (), NULL));
+	role = ZAK_AUTHO_ROLE (g_object_new (zak_autho_role_get_type (), NULL));
 
-	priv = AUTOZ_ROLE_GET_PRIVATE (role);
+	priv = ZAK_AUTHO_ROLE_GET_PRIVATE (role);
 
 	priv->role_id = g_strdup (role_id);
 
@@ -97,17 +97,17 @@ AutozRole
 
 /* PRIVATE */
 static const gchar
-*autoz_role_get_role_id (AutozIRole *irole)
+*zak_autho_role_get_role_id (ZakAuthoIRole *irole)
 {
-	AutozRolePrivate *priv;
+	ZakAuthoRolePrivate *priv;
 
 	const gchar *ret;
 
 	ret = NULL;
 
-	g_return_val_if_fail (AUTOZ_IS_ROLE (irole), ret);
+	g_return_val_if_fail (ZAK_AUTHO_IS_ROLE (irole), ret);
 
-	priv = AUTOZ_ROLE_GET_PRIVATE (irole);
+	priv = ZAK_AUTHO_ROLE_GET_PRIVATE (irole);
 
 	ret = (const gchar *)g_strdup (priv->role_id);
 
@@ -115,14 +115,14 @@ static const gchar
 }
 
 static void
-autoz_role_set_property (GObject *object,
+zak_autho_role_set_property (GObject *object,
                    guint property_id,
                    const GValue *value,
                    GParamSpec *pspec)
 {
-	AutozRole *form = (AutozRole *)object;
+	ZakAuthoRole *form = (ZakAuthoRole *)object;
 
-	AutozRolePrivate *priv = AUTOZ_ROLE_GET_PRIVATE (form);
+	ZakAuthoRolePrivate *priv = ZAK_AUTHO_ROLE_GET_PRIVATE (form);
 
 	switch (property_id)
 		{
@@ -133,14 +133,14 @@ autoz_role_set_property (GObject *object,
 }
 
 static void
-autoz_role_get_property (GObject *object,
+zak_autho_role_get_property (GObject *object,
                    guint property_id,
                    GValue *value,
                    GParamSpec *pspec)
 {
-	AutozRole *form = (AutozRole *)object;
+	ZakAuthoRole *form = (ZakAuthoRole *)object;
 
-	AutozRolePrivate *priv = AUTOZ_ROLE_GET_PRIVATE (form);
+	ZakAuthoRolePrivate *priv = ZAK_AUTHO_ROLE_GET_PRIVATE (form);
 
 	switch (property_id)
 		{

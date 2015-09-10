@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2015 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,26 +22,26 @@
 
 #include "resource_interface.h"
 
-typedef AutozIResourceIface AutozIResourceInterface;
-G_DEFINE_INTERFACE (AutozIResource, autoz_iresource, G_TYPE_OBJECT)
+typedef ZakAuthoIResourceIface ZakAuthoIResourceInterface;
+G_DEFINE_INTERFACE (ZakAuthoIResource, zak_autho_iresource, G_TYPE_OBJECT)
 
 static void
-autoz_iresource_default_init (AutozIResourceInterface *iface)
+zak_autho_iresource_default_init (ZakAuthoIResourceInterface *iface)
 {
 }
 
 const gchar
-*autoz_iresource_get_resource_id (AutozIResource *iresource)
+*zak_autho_iresource_get_resource_id (ZakAuthoIResource *iresource)
 {
-	AutozIResourceIface *iface;
+	ZakAuthoIResourceIface *iface;
 
 	gchar *ret;
 
 	ret = NULL;
 
-	g_return_val_if_fail (AUTOZ_IS_IRESOURCE (iresource), ret);
+	g_return_val_if_fail (ZAK_AUTHO_IS_IRESOURCE (iresource), ret);
 
-	iface = AUTOZ_IRESOURCE_GET_IFACE (iresource);
+	iface = ZAK_AUTHO_IRESOURCE_GET_IFACE (iresource);
 
 	if (iface->get_resource_id)
 		{

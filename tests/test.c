@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2015 Andrea Zagli <azagli@libero.it>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <glib/gprintf.h>
+
 #include <libxml/tree.h>
 
 #include "autoz.h"
@@ -25,48 +27,48 @@
 int
 main (int argc, char **argv)
 {
-	Autoz *autoz;
-	AutozRole *role_writer;
-	AutozRole *role_writer_child;
-	AutozRole *role_read_only;
-	AutozResource *resource_page;
+	ZakAutho *zak_autho;
+	ZakAuthoRole *role_writer;
+	ZakAuthoRole *role_writer_child;
+	ZakAuthoRole *role_read_only;
+	ZakAuthoResource *resource_page;
 
 	xmlDocPtr xdoc;
 	xmlNodePtr xnode;
 
-	autoz = autoz_new ();
+	zak_autho = zak_autho_new ();
 
-	autoz_add_role (autoz, AUTOZ_IROLE (autoz_role_new ("super-admin")));
+	zak_autho_add_role (zak_autho, ZAK_AUTHO_IROLE (zak_autho_role_new ("super-admin")));
 
-	autoz_allow (autoz,
-		autoz_get_role_from_id (autoz, "super-admin"),
+	zak_autho_allow (zak_autho,
+		zak_autho_get_role_from_id (zak_autho, "super-admin"),
 		NULL);
 
-	role_writer = autoz_role_new ("writer");
-	autoz_add_role (autoz, AUTOZ_IROLE (role_writer));
+	role_writer = zak_autho_role_new ("writer");
+	zak_autho_add_role (zak_autho, ZAK_AUTHO_IROLE (role_writer));
 
-	role_writer_child = autoz_role_new ("writer-child");
-	autoz_add_role_with_parents (autoz, AUTOZ_IROLE (role_writer_child),
-	                             AUTOZ_IROLE (role_writer),
+	role_writer_child = zak_autho_role_new ("writer-child");
+	zak_autho_add_role_with_parents (zak_autho, ZAK_AUTHO_IROLE (role_writer_child),
+	                             ZAK_AUTHO_IROLE (role_writer),
 	                             NULL);
 
-	role_read_only = autoz_role_new ("read-only");
-	autoz_add_role (autoz, AUTOZ_IROLE (role_read_only));
+	role_read_only = zak_autho_role_new ("read-only");
+	zak_autho_add_role (zak_autho, ZAK_AUTHO_IROLE (role_read_only));
 
-	resource_page = autoz_resource_new ("page");
-	autoz_add_resource (autoz, AUTOZ_IRESOURCE (resource_page));
+	resource_page = zak_autho_resource_new ("page");
+	zak_autho_add_resource (zak_autho, ZAK_AUTHO_IRESOURCE (resource_page));
 
-	autoz_add_resource_with_parents (autoz,
-		AUTOZ_IRESOURCE (autoz_resource_new ("paragraph")),
-		autoz_get_resource_from_id (autoz, "page"),
+	zak_autho_add_resource_with_parents (zak_autho,
+		ZAK_AUTHO_IRESOURCE (zak_autho_resource_new ("paragraph")),
+		zak_autho_get_resource_from_id (zak_autho, "page"),
 		NULL);
 
-	autoz_allow (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource_page));
+	zak_autho_allow (zak_autho, ZAK_AUTHO_IROLE (role_writer), ZAK_AUTHO_IRESOURCE (resource_page));
 
-	autoz_deny (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph")));
+	zak_autho_deny (zak_autho, ZAK_AUTHO_IROLE (role_writer_child), ZAK_AUTHO_IRESOURCE (zak_autho_get_resource_from_id (zak_autho, "paragraph")));
 
 	/* get xml */
-	xnode = autoz_get_xml (autoz);
+	xnode = zak_autho_get_xml (zak_autho);
 	if (xnode != NULL)
 		{
 			xdoc = xmlNewDoc ("1.0");
@@ -77,21 +79,21 @@ main (int argc, char **argv)
 		}
 
 	g_message ("super-admin %s allowed to page.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), AUTOZ_IRESOURCE (resource_page), FALSE) ? "is" : "isn't"));
+	           (zak_autho_is_allowed (zak_autho, zak_autho_get_role_from_id (zak_autho, "super-admin"), ZAK_AUTHO_IRESOURCE (resource_page), FALSE) ? "is" : "isn't"));
 	g_message ("super-admin %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, autoz_get_role_from_id (autoz, "super-admin"), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph")), FALSE) ? "is" : "isn't"));
+	           (zak_autho_is_allowed (zak_autho, zak_autho_get_role_from_id (zak_autho, "super-admin"), ZAK_AUTHO_IRESOURCE (zak_autho_get_resource_from_id (zak_autho, "paragraph")), FALSE) ? "is" : "isn't"));
 	g_message ("writer %s allowed to page.",
-	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (resource_page), FALSE) ? "is" : "isn't"));
+	           (zak_autho_is_allowed (zak_autho, ZAK_AUTHO_IROLE (role_writer), ZAK_AUTHO_IRESOURCE (resource_page), FALSE) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to page.",
-	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (resource_page), FALSE) ? "is" : "isn't"));
+	           (zak_autho_is_allowed (zak_autho, ZAK_AUTHO_IROLE (role_writer_child), ZAK_AUTHO_IRESOURCE (resource_page), FALSE) ? "is" : "isn't"));
 	g_message ("writer %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph")), FALSE) ? "is" : "isn't"));
+	           (zak_autho_is_allowed (zak_autho, ZAK_AUTHO_IROLE (role_writer), ZAK_AUTHO_IRESOURCE (zak_autho_get_resource_from_id (zak_autho, "paragraph")), FALSE) ? "is" : "isn't"));
 	g_message ("writer-child %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_writer_child), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph")), FALSE) ? "is" : "isn't"));
+	           (zak_autho_is_allowed (zak_autho, ZAK_AUTHO_IROLE (role_writer_child), ZAK_AUTHO_IRESOURCE (zak_autho_get_resource_from_id (zak_autho, "paragraph")), FALSE) ? "is" : "isn't"));
 	g_message ("read-only %s allowed to page.",
-	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_read_only), AUTOZ_IRESOURCE (resource_page), FALSE) ? "is" : "isn't"));
+	           (zak_autho_is_allowed (zak_autho, ZAK_AUTHO_IROLE (role_read_only), ZAK_AUTHO_IRESOURCE (resource_page), FALSE) ? "is" : "isn't"));
 	g_message ("read-only %s allowed to paragraph.",
-	           (autoz_is_allowed (autoz, AUTOZ_IROLE (role_read_only), AUTOZ_IRESOURCE (autoz_get_resource_from_id (autoz, "paragraph")), FALSE) ? "is" : "isn't"));
+	           (zak_autho_is_allowed (zak_autho, ZAK_AUTHO_IROLE (role_read_only), ZAK_AUTHO_IRESOURCE (zak_autho_get_resource_from_id (zak_autho, "paragraph")), FALSE) ? "is" : "isn't"));
 
 	return 0;
 }

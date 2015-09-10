@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2015 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,14 +31,14 @@
 typedef struct _Role Role;
 struct _Role
 	{
-		AutozIRole *irole;
+		ZakAuthoIRole *irole;
 		GList *parents; /* struct Role */
 	};
 
 typedef struct _Resource Resource;
 struct _Resource
 	{
-		AutozIResource *iresource;
+		ZakAuthoIResource *iresource;
 		GList *parents; /* struct Resource */
 	};
 
@@ -49,45 +49,45 @@ struct _Rule
 		Resource *resource;
 	};
 
-typedef enum AutozIsAllowed
+typedef enum ZakAuthoIsAllowed
 	{
-		AUTOZ_ALLOWED,
-		AUTOZ_DENIED,
-		AUTOZ_NOT_FOUND
-	} AutozIsAllowed;
+		ZAK_AUTHO_ALLOWED,
+		ZAK_AUTHO_DENIED,
+		ZAK_AUTHO_NOT_FOUND
+	} ZakAuthoIsAllowed;
 
-static void autoz_class_init (AutozClass *class);
-static void autoz_init (Autoz *autoz);
+static void zak_autho_class_init (ZakAuthoClass *class);
+static void zak_autho_init (ZakAutho *zak_autho);
 
-static AutozIsAllowed _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource, gboolean exclude_null);
-static AutozIsAllowed _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource);
+static ZakAuthoIsAllowed _zak_autho_is_allowed_role (ZakAutho *zak_autho, Role *role, Resource *resource, gboolean exclude_null);
+static ZakAuthoIsAllowed _zak_autho_is_allowed_resource (ZakAutho *zak_autho, Role *role, Resource *resource);
 
-static gboolean _autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix);
-static guint _autoz_find_new_table_id (GdaConnection *gdacon, const gchar *table_name);
-static guint _autoz_get_role_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *role_id);
-static guint _autoz_get_resource_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *resource_id);
+static gboolean _zak_autho_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix);
+static guint _zak_autho_find_new_table_id (GdaConnection *gdacon, const gchar *table_name);
+static guint _zak_autho_get_role_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *role_id);
+static guint _zak_autho_get_resource_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *resource_id);
 
-static void _autoz_check_updated (Autoz *autoz);
+static void _zak_autho_check_updated (ZakAutho *zak_autho);
 
-static Role *_autoz_get_role_from_id (Autoz *autoz, const gchar *role_id);
-static Resource *_autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id);
+static Role *_zak_autho_get_role_from_id (ZakAutho *zak_autho, const gchar *role_id);
+static Resource *_zak_autho_get_resource_from_id (ZakAutho *zak_autho, const gchar *resource_id);
 
-static gchar *_autoz_remove_role_name_prefix_from_id (Autoz *autoz, const gchar *role_id);
-static gchar *_autoz_remove_resource_name_prefix_from_id (Autoz *autoz, const gchar *resource_id);
+static gchar *_zak_autho_remove_role_name_prefix_from_id (ZakAutho *zak_autho, const gchar *role_id);
+static gchar *_zak_autho_remove_resource_name_prefix_from_id (ZakAutho *zak_autho, const gchar *resource_id);
 
-static void autoz_set_property (GObject *object,
+static void zak_autho_set_property (GObject *object,
                                guint property_id,
                                const GValue *value,
                                GParamSpec *pspec);
-static void autoz_get_property (GObject *object,
+static void zak_autho_get_property (GObject *object,
                                guint property_id,
                                GValue *value,
                                GParamSpec *pspec);
 
-#define AUTOZ_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), TYPE_AUTOZ, AutozPrivate))
+#define ZAK_AUTHO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ZAK_TYPE_AUTHO, ZakAuthoPrivate))
 
-typedef struct _AutozPrivate AutozPrivate;
-struct _AutozPrivate
+typedef struct _ZakAuthoPrivate ZakAuthoPrivate;
+struct _ZakAuthoPrivate
 	{
 		gchar *role_name_prefix;
 		gchar *resource_name_prefix;
@@ -104,23 +104,23 @@ struct _AutozPrivate
 		gboolean on_loading;
 	};
 
-G_DEFINE_TYPE (Autoz, autoz, G_TYPE_OBJECT)
+G_DEFINE_TYPE (ZakAutho, zak_autho, G_TYPE_OBJECT)
 
 static void
-autoz_class_init (AutozClass *class)
+zak_autho_class_init (ZakAuthoClass *class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (class);
 
-	object_class->set_property = autoz_set_property;
-	object_class->get_property = autoz_get_property;
+	object_class->set_property = zak_autho_set_property;
+	object_class->get_property = zak_autho_get_property;
 
-	g_type_class_add_private (object_class, sizeof (AutozPrivate));
+	g_type_class_add_private (object_class, sizeof (ZakAuthoPrivate));
 }
 
 static void
-autoz_init (Autoz *autoz)
+zak_autho_init (ZakAutho *zak_autho)
 {
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	ZakAuthoPrivate *priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	priv->role_name_prefix = NULL;
 	priv->resource_name_prefix = NULL;
@@ -138,30 +138,30 @@ autoz_init (Autoz *autoz)
 }
 
 /**
- * autoz_new:
+ * zak_autho_new:
  *
- * Returns: the newly created #Autoz object.
+ * Returns: the newly created #ZakAutho object.
  */
-Autoz
-*autoz_new ()
+ZakAutho
+*zak_autho_new ()
 {
-	return AUTOZ (g_object_new (autoz_get_type (), NULL));
+	return ZAK_AUTHO (g_object_new (zak_autho_get_type (), NULL));
 }
 
 /**
- * autoz_set_role_name_prefix:
- * @autoz: an #Autoz object.
+ * zak_autho_set_role_name_prefix:
+ * @zak_autho: an #ZakAutho object.
  * @prefix:
  *
  */
 void
-autoz_set_role_name_prefix (Autoz *autoz, const gchar *prefix)
+zak_autho_set_role_name_prefix (ZakAutho *zak_autho, const gchar *prefix)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
-	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (IS_ZAK_AUTHO (zak_autho));
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	if (priv->role_name_prefix != NULL)
 		{
@@ -179,36 +179,36 @@ autoz_set_role_name_prefix (Autoz *autoz, const gchar *prefix)
 }
 
 /**
- * autoz_get_role_name_prefix:
- * @autoz: an #Autoz object.
+ * zak_autho_get_role_name_prefix:
+ * @zak_autho: an #ZakAutho object.
  *
  */
 const gchar
-*autoz_get_role_name_prefix (Autoz *autoz)
+*zak_autho_get_role_name_prefix (ZakAutho *zak_autho)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), NULL);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	return priv->role_name_prefix == NULL ? NULL : g_strdup (priv->role_name_prefix);
 }
 
 /**
- * autoz_set_resource_name_prefix:
- * @autoz: an #Autoz object.
+ * zak_autho_set_resource_name_prefix:
+ * @zak_autho: an #ZakAutho object.
  * @prefix:
  *
  */
 void
-autoz_set_resource_name_prefix (Autoz *autoz, const gchar *prefix)
+zak_autho_set_resource_name_prefix (ZakAutho *zak_autho, const gchar *prefix)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
-	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (IS_ZAK_AUTHO (zak_autho));
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	if (priv->resource_name_prefix != NULL)
 		{
@@ -226,62 +226,62 @@ autoz_set_resource_name_prefix (Autoz *autoz, const gchar *prefix)
 }
 
 /**
- * autoz_get_resource_name_prefix:
- * @autoz: an #Autoz object.
+ * zak_autho_get_resource_name_prefix:
+ * @zak_autho: an #ZakAutho object.
  *
  */
 const gchar
-*autoz_get_resource_name_prefix (Autoz *autoz)
+*zak_autho_get_resource_name_prefix (ZakAutho *zak_autho)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), NULL);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	return priv->resource_name_prefix == NULL ? NULL : g_strdup (priv->resource_name_prefix);
 }
 
 /**
- * autoz_add_role:
- * @autoz: an #Autoz object.
+ * zak_autho_add_role:
+ * @zak_autho: an #ZakAutho object.
  * @irole:
- * 
+ *
  */
 void
-autoz_add_role (Autoz *autoz, AutozIRole *irole)
+zak_autho_add_role (ZakAutho *zak_autho, ZakAuthoIRole *irole)
 {
-	autoz_add_role_with_parents (autoz, irole, NULL);
+	zak_autho_add_role_with_parents (zak_autho, irole, NULL);
 }
 
 /**
- * autoz_add_role_with_parents:
- * @autoz: an #Autoz object.
+ * zak_autho_add_role_with_parents:
+ * @zak_autho: an #ZakAutho object.
  * @irole:
  * @...:
- * 
+ *
  */
 void
-autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
+zak_autho_add_role_with_parents (ZakAutho *zak_autho, ZakAuthoIRole *irole, ...)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
 	const gchar *role_id;
 	const gchar *role_id_parent;
 
-	g_return_if_fail (IS_AUTOZ (autoz));
-	g_return_if_fail (AUTOZ_IS_IROLE (irole));
+	g_return_if_fail (IS_ZAK_AUTHO (zak_autho));
+	g_return_if_fail (ZAK_AUTHO_IS_IROLE (irole));
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	role_id = autoz_irole_get_role_id (irole);
+	role_id = zak_autho_irole_get_role_id (irole);
 
 	if (g_hash_table_lookup (priv->roles, role_id) == NULL)
 		{
 			va_list args;
 			Role *role;
 
-			AutozIRole *irole_parent;
+			ZakAuthoIRole *irole_parent;
 			Role *role_parent;
 
 			role = (Role *)g_malloc0 (sizeof (Role));
@@ -289,9 +289,9 @@ autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 			role->parents = NULL;
 
 			va_start (args, irole);
-			while ((irole_parent = va_arg (args, AutozIRole *)) != NULL)
+			while ((irole_parent = va_arg (args, ZakAuthoIRole *)) != NULL)
 				{
-					role_id_parent = autoz_irole_get_role_id (irole_parent);
+					role_id_parent = zak_autho_irole_get_role_id (irole_parent);
 					if (g_strcmp0 (role_id, role_id_parent) == 0)
 						{
 							g_warning ("The parent cannot be himself (%s).", role_id);
@@ -305,7 +305,7 @@ autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 								}
 							else
 								{
-									g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole_parent));
+									g_warning ("Role «%s» not found.", zak_autho_irole_get_role_id (irole_parent));
 								}
 						}
 				}
@@ -320,54 +320,54 @@ autoz_add_role_with_parents (Autoz *autoz, AutozIRole *irole, ...)
 }
 
 /**
- * autoz_add_parent_to_role:
- * @autoz: an #Autoz object.
+ * zak_autho_add_parent_to_role:
+ * @zak_autho: an #ZakAutho object.
  * @irole:
  * @irole_parent:
- * 
+ *
  */
 void
-autoz_add_parent_to_role (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent)
+zak_autho_add_parent_to_role (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIRole *irole_parent)
 {
-	autoz_add_parents_to_role (autoz, irole, irole_parent, NULL);
+	zak_autho_add_parents_to_role (zak_autho, irole, irole_parent, NULL);
 }
 
 /**
- * autoz_add_parents_to_role:
- * @autoz: an #Autoz object.
+ * zak_autho_add_parents_to_role:
+ * @zak_autho: an #ZakAutho object.
  * @irole:
  * @...:
- * 
+ *
  */
 void
-autoz_add_parents_to_role (Autoz *autoz, AutozIRole *irole, ...)
+zak_autho_add_parents_to_role (ZakAutho *zak_autho, ZakAuthoIRole *irole, ...)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
 	Role *role;
 
 	const gchar *role_id;
 	const gchar *role_id_parent;
 
-	g_return_if_fail (IS_AUTOZ (autoz));
-	g_return_if_fail (AUTOZ_IS_IROLE (irole));
+	g_return_if_fail (IS_ZAK_AUTHO (zak_autho));
+	g_return_if_fail (ZAK_AUTHO_IS_IROLE (irole));
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	role_id = autoz_irole_get_role_id (irole);
+	role_id = zak_autho_irole_get_role_id (irole);
 
 	role = g_hash_table_lookup (priv->roles, role_id);
 	if (role != NULL)
 		{
 			va_list args;
 
-			AutozIRole *irole_parent;
+			ZakAuthoIRole *irole_parent;
 			Role *role_parent;
 
 			va_start (args, irole);
-			while ((irole_parent = va_arg (args, AutozIRole *)) != NULL)
+			while ((irole_parent = va_arg (args, ZakAuthoIRole *)) != NULL)
 				{
-					role_id_parent = autoz_irole_get_role_id (irole_parent);
+					role_id_parent = zak_autho_irole_get_role_id (irole_parent);
 					if (g_strcmp0 (role_id, role_id_parent) == 0)
 						{
 							g_warning ("The parent cannot be himself (%s).", role_id);
@@ -394,17 +394,17 @@ autoz_add_parents_to_role (Autoz *autoz, AutozIRole *irole, ...)
 }
 
 /**
- * autoz_role_is_child:
- * @autoz: an #Autoz object.
- * @irole: an #AutozIRole object.
- * @irole_parent: an #AutozIRole object.
- * 
+ * zak_autho_role_is_child:
+ * @zak_autho: an #ZakAutho object.
+ * @irole: an #ZakAuthoIRole object.
+ * @irole_parent: an #ZakAuthoIRole object.
+ *
  * Returns: #TRUE if @irole is a @irole_parent's child; #FALSE otherwise.
  */
 gboolean
-autoz_role_is_child (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent)
+zak_autho_role_is_child (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIRole *irole_parent)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 	gboolean ret;
 
 	Role *role;
@@ -412,22 +412,22 @@ autoz_role_is_child (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent)
 	const gchar *role_id_parent;
 	GList *parent;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
-	g_return_val_if_fail (AUTOZ_IS_IROLE (irole), FALSE);
-	g_return_val_if_fail (AUTOZ_IS_IROLE (irole_parent), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
+	g_return_val_if_fail (ZAK_AUTHO_IS_IROLE (irole), FALSE);
+	g_return_val_if_fail (ZAK_AUTHO_IS_IROLE (irole_parent), FALSE);
 
-	_autoz_check_updated (autoz);
+	_zak_autho_check_updated (zak_autho);
 
 	ret = FALSE;
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
+	role = g_hash_table_lookup (priv->roles, zak_autho_irole_get_role_id (irole));
 	if (role == NULL)
 		{
-			g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole));
+			g_warning ("Role «%s» not found.", zak_autho_irole_get_role_id (irole));
 			return ret;
 		}
-	role_id_parent = autoz_irole_get_role_id (irole_parent);
+	role_id_parent = zak_autho_irole_get_role_id (irole_parent);
 	role_parent = g_hash_table_lookup (priv->roles, role_id_parent);
 	if (role_parent == NULL)
 		{
@@ -440,7 +440,7 @@ autoz_role_is_child (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent)
 		{
 			/* TODO recursion */
 			role_parent = (Role *)parent->data;
-			if (g_strcmp0 (role_id_parent, autoz_irole_get_role_id (role_parent->irole)) == 0)
+			if (g_strcmp0 (role_id_parent, zak_autho_irole_get_role_id (role_parent->irole)) == 0)
 				{
 					ret = TRUE;
 					break;
@@ -453,18 +453,18 @@ autoz_role_is_child (Autoz *autoz, AutozIRole *irole, AutozIRole *irole_parent)
 }
 
 static Role
-*_autoz_get_role_from_id (Autoz *autoz, const gchar *role_id)
+*_zak_autho_get_role_from_id (ZakAutho *zak_autho, const gchar *role_id)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 	Role *role;
 
 	gchar *_role_id;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), NULL);
 
-	_autoz_check_updated (autoz);
+	_zak_autho_check_updated (zak_autho);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	if (priv->role_name_prefix != NULL)
 		{
@@ -482,17 +482,17 @@ static Role
 }
 
 /**
- * autoz_get_role_from_id:
- * @autoz: an #Autoz object.
+ * zak_autho_get_role_from_id:
+ * @zak_autho: an #ZakAutho object.
  * @role_id:
- * 
+ *
  */
-AutozIRole
-*autoz_get_role_from_id (Autoz *autoz, const gchar *role_id)
+ZakAuthoIRole
+*zak_autho_get_role_from_id (ZakAutho *zak_autho, const gchar *role_id)
 {
 	Role *role;
 
-	role = _autoz_get_role_from_id (autoz, role_id);
+	role = _zak_autho_get_role_from_id (zak_autho, role_id);
 	if (role == NULL)
 		{
 			return NULL;
@@ -504,43 +504,43 @@ AutozIRole
 }
 
 /**
- * autoz_add_resource:
- * @autoz: an #Autoz object.
+ * zak_autho_add_resource:
+ * @zak_autho: an #ZakAutho object.
  * @iresource:
- * 
+ *
  */
 void
-autoz_add_resource (Autoz *autoz, AutozIResource *iresource)
+zak_autho_add_resource (ZakAutho *zak_autho, ZakAuthoIResource *iresource)
 {
-	autoz_add_resource_with_parents (autoz, iresource, NULL);
+	zak_autho_add_resource_with_parents (zak_autho, iresource, NULL);
 }
 
 /**
- * autoz_add_resource_with_parents:
- * @autoz: an #Autoz object.
+ * zak_autho_add_resource_with_parents:
+ * @zak_autho: an #ZakAutho object.
  * @iresource:
  * @...:
- * 
+ *
  */
 void
-autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...)
+zak_autho_add_resource_with_parents (ZakAutho *zak_autho, ZakAuthoIResource *iresource, ...)
 {
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	ZakAuthoPrivate *priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	const gchar *resource_id;
 	const gchar *resource_id_parent;
 
-	g_return_if_fail (IS_AUTOZ (autoz));
-	g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
+	g_return_if_fail (IS_ZAK_AUTHO (zak_autho));
+	g_return_if_fail (ZAK_AUTHO_IS_IRESOURCE (iresource));
 
-	resource_id = autoz_iresource_get_resource_id (iresource);
+	resource_id = zak_autho_iresource_get_resource_id (iresource);
 
 	if (g_hash_table_lookup (priv->resources, resource_id) == NULL)
 		{
 			va_list args;
 			Resource *resource;
 
-			AutozIResource *iresource_parent;
+			ZakAuthoIResource *iresource_parent;
 			Resource *resource_parent;
 
 			resource = (Resource *)g_malloc0 (sizeof (Resource));
@@ -548,9 +548,9 @@ autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...)
 			resource->parents = NULL;
 
 			va_start (args, iresource);
-			while ((iresource_parent = va_arg (args, AutozIResource *)) != NULL)
+			while ((iresource_parent = va_arg (args, ZakAuthoIResource *)) != NULL)
 				{
-					resource_id_parent = autoz_iresource_get_resource_id (iresource_parent);
+					resource_id_parent = zak_autho_iresource_get_resource_id (iresource_parent);
 					if (g_strcmp0 (resource_id, resource_id_parent) == 0)
 						{
 							g_warning ("The parent cannot be himself (%s).", resource_id);
@@ -561,12 +561,12 @@ autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...)
 							if (resource_parent != NULL)
 								{
 									resource->parents = g_list_append (resource->parents, resource_parent);
-								}					
+								}
 							else
 								{
-									g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource_parent));
+									g_warning ("Resource «%s» not found.", zak_autho_iresource_get_resource_id (iresource_parent));
 							}
-						}	
+						}
 				}
 			va_end (args);
 
@@ -579,54 +579,54 @@ autoz_add_resource_with_parents (Autoz *autoz, AutozIResource *iresource, ...)
 }
 
 /**
- * autoz_add_parent_to_resource:
- * @autoz: an #Autoz object.
- * @iresource: an #AutozIResource object.
- * @iresource_parent: an #AutozIResource object.
- * 
+ * zak_autho_add_parent_to_resource:
+ * @zak_autho: an #ZakAutho object.
+ * @iresource: an #ZakAuthoIResource object.
+ * @iresource_parent: an #ZakAuthoIResource object.
+ *
  */
 void
-autoz_add_parent_to_resource (Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent)
+zak_autho_add_parent_to_resource (ZakAutho *zak_autho, ZakAuthoIResource *iresource, ZakAuthoIResource *iresource_parent)
 {
-	autoz_add_parents_to_resource (autoz, iresource, iresource_parent, NULL);
+	zak_autho_add_parents_to_resource (zak_autho, iresource, iresource_parent, NULL);
 }
 
 /**
- * autoz_add_parents_to_resource:
- * @autoz: an #Autoz object.
+ * zak_autho_add_parents_to_resource:
+ * @zak_autho: an #ZakAutho object.
  * @iresource:
  * @...:
- * 
+ *
  */
 void
-autoz_add_parents_to_resource (Autoz *autoz, AutozIResource *iresource, ...)
+zak_autho_add_parents_to_resource (ZakAutho *zak_autho, ZakAuthoIResource *iresource, ...)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
 	Resource *resource;
 
 	const gchar *resource_id;
 	const gchar *resource_id_parent;
 
-	g_return_if_fail (IS_AUTOZ (autoz));
-	g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
+	g_return_if_fail (IS_ZAK_AUTHO (zak_autho));
+	g_return_if_fail (ZAK_AUTHO_IS_IRESOURCE (iresource));
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	resource_id = autoz_iresource_get_resource_id (iresource);
+	resource_id = zak_autho_iresource_get_resource_id (iresource);
 
 	resource = g_hash_table_lookup (priv->resources, resource_id);
 	if (resource != NULL)
 		{
 			va_list args;
 
-			AutozIResource *iresource_parent;
+			ZakAuthoIResource *iresource_parent;
 			Resource *resource_parent;
 
 			va_start (args, iresource);
-			while ((iresource_parent = va_arg (args, AutozIResource *)) != NULL)
+			while ((iresource_parent = va_arg (args, ZakAuthoIResource *)) != NULL)
 				{
-					resource_id_parent = autoz_iresource_get_resource_id (iresource_parent);
+					resource_id_parent = zak_autho_iresource_get_resource_id (iresource_parent);
 					if (g_strcmp0 (resource_id, resource_id_parent) == 0)
 						{
 							g_warning ("The parent cannot be himself (%s).", resource_id);
@@ -653,17 +653,17 @@ autoz_add_parents_to_resource (Autoz *autoz, AutozIResource *iresource, ...)
 }
 
 /**
- * autoz_resource_is_child:
- * @autoz: an #Autoz object.
- * @iresource: an #AutozIResource object.
- * @iresource_parent: an #AutozIResource object.
- * 
+ * zak_autho_resource_is_child:
+ * @zak_autho: an #ZakAutho object.
+ * @iresource: an #ZakAuthoIResource object.
+ * @iresource_parent: an #ZakAuthoIResource object.
+ *
  * Returns: #TRUE if @iresource is a @iresource_parent's child; #FALSE otherwise.
  */
 gboolean
-autoz_resource_is_child (Autoz *autoz, AutozIResource *iresource, AutozIResource *iresource_parent)
+zak_autho_resource_is_child (ZakAutho *zak_autho, ZakAuthoIResource *iresource, ZakAuthoIResource *iresource_parent)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 	gboolean ret;
 
 	Resource *resource;
@@ -671,22 +671,22 @@ autoz_resource_is_child (Autoz *autoz, AutozIResource *iresource, AutozIResource
 	const gchar *resource_id_parent;
 	GList *parent;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
-	g_return_val_if_fail (AUTOZ_IS_IRESOURCE (iresource), FALSE);
-	g_return_val_if_fail (AUTOZ_IS_IRESOURCE (iresource_parent), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
+	g_return_val_if_fail (ZAK_AUTHO_IS_IRESOURCE (iresource), FALSE);
+	g_return_val_if_fail (ZAK_AUTHO_IS_IRESOURCE (iresource_parent), FALSE);
 
-	_autoz_check_updated (autoz);
+	_zak_autho_check_updated (zak_autho);
 
 	ret = FALSE;
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+	resource = g_hash_table_lookup (priv->resources, zak_autho_iresource_get_resource_id (iresource));
 	if (resource == NULL)
 		{
-			g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource));
+			g_warning ("Resource «%s» not found.", zak_autho_iresource_get_resource_id (iresource));
 			return ret;
 		}
-	resource_id_parent = autoz_iresource_get_resource_id (iresource_parent);
+	resource_id_parent = zak_autho_iresource_get_resource_id (iresource_parent);
 	resource_parent = g_hash_table_lookup (priv->resources, resource_id_parent);
 	if (resource_parent == NULL)
 		{
@@ -699,7 +699,7 @@ autoz_resource_is_child (Autoz *autoz, AutozIResource *iresource, AutozIResource
 		{
 			/* TODO recursion */
 			resource_parent = (Resource *)parent->data;
-			if (g_strcmp0 (resource_id_parent, autoz_iresource_get_resource_id (resource_parent->iresource)) == 0)
+			if (g_strcmp0 (resource_id_parent, zak_autho_iresource_get_resource_id (resource_parent->iresource)) == 0)
 				{
 					ret = TRUE;
 					break;
@@ -712,18 +712,18 @@ autoz_resource_is_child (Autoz *autoz, AutozIResource *iresource, AutozIResource
 }
 
 static Resource
-*_autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id)
+*_zak_autho_get_resource_from_id (ZakAutho *zak_autho, const gchar *resource_id)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 	Resource *resource;
 
 	gchar *_resource_id;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), NULL);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), NULL);
 
-	_autoz_check_updated (autoz);
+	_zak_autho_check_updated (zak_autho);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	if (priv->resource_name_prefix != NULL)
 		{
@@ -741,17 +741,17 @@ static Resource
 }
 
 /**
- * autoz_get_resource_from_id:
- * @autoz: an #Autoz object.
+ * zak_autho_get_resource_from_id:
+ * @zak_autho: an #ZakAutho object.
  * @resource_id:
- * 
+ *
  */
-AutozIResource
-*autoz_get_resource_from_id (Autoz *autoz, const gchar *resource_id)
+ZakAuthoIResource
+*zak_autho_get_resource_from_id (ZakAutho *zak_autho, const gchar *resource_id)
 {
 	Resource *resource;
 
-	resource = _autoz_get_resource_from_id (autoz, resource_id);
+	resource = _zak_autho_get_resource_from_id (zak_autho, resource_id);
 	if (resource == NULL)
 		{
 			return NULL;
@@ -763,16 +763,16 @@ AutozIResource
 }
 
 /**
- * autoz_allow:
- * @autoz: an #Autoz object.
+ * zak_autho_allow:
+ * @zak_autho: an #ZakAutho object.
  * @irole:
  * @iresource:
- * 
+ *
  */
 void
-autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
+zak_autho_allow (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIResource *iresource)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
 	Role *role;
 	Resource *resource;
@@ -781,15 +781,15 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 
 	gchar *str_id;
 
-	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (IS_ZAK_AUTHO (zak_autho));
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	/* check if exists */
-	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
+	role = g_hash_table_lookup (priv->roles, zak_autho_irole_get_role_id (irole));
 	if (role == NULL)
 		{
-			g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole));
+			g_warning ("Role «%s» not found.", zak_autho_irole_get_role_id (irole));
 			return;
 		}
 
@@ -800,12 +800,12 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 		}
 	else
 		{
-			g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
+			g_return_if_fail (ZAK_AUTHO_IS_IRESOURCE (iresource));
 
-			resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+			resource = g_hash_table_lookup (priv->resources, zak_autho_iresource_get_resource_id (iresource));
 			if (resource == NULL)
 				{
-					g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource));
+					g_warning ("Resource «%s» not found.", zak_autho_iresource_get_resource_id (iresource));
 					return;
 				}
 		}
@@ -814,9 +814,9 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	r->role = role;
 	r->resource = resource;
 
-	str_id = g_strconcat (autoz_irole_get_role_id (r->role->irole),
+	str_id = g_strconcat (zak_autho_irole_get_role_id (r->role->irole),
 	                      "|",
-	                      (resource == NULL ? "NULL" : autoz_iresource_get_resource_id (r->resource->iresource)),
+	                      (resource == NULL ? "NULL" : zak_autho_iresource_get_resource_id (r->resource->iresource)),
 	                      NULL);
 
 	if (g_hash_table_lookup (priv->rules_allow, str_id) == NULL)
@@ -826,16 +826,16 @@ autoz_allow (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 }
 
 /**
- * autoz_deny:
- * @autoz: an #Autoz object.
+ * zak_autho_deny:
+ * @zak_autho: an #ZakAutho object.
  * @irole:
  * @iresource:
- * 
+ *
  */
 void
-autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
+zak_autho_deny (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIResource *iresource)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
 	Role *role;
 	Resource *resource;
@@ -844,15 +844,15 @@ autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 
 	gchar *str_id;
 
-	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (IS_ZAK_AUTHO (zak_autho));
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	/* check if exists */
-	role = g_hash_table_lookup (priv->roles, autoz_irole_get_role_id (irole));
+	role = g_hash_table_lookup (priv->roles, zak_autho_irole_get_role_id (irole));
 	if (role == NULL)
 		{
-			g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole));
+			g_warning ("Role «%s» not found.", zak_autho_irole_get_role_id (irole));
 			return;
 		}
 
@@ -863,9 +863,9 @@ autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 		}
 	else
 		{
-			g_return_if_fail (AUTOZ_IS_IRESOURCE (iresource));
+			g_return_if_fail (ZAK_AUTHO_IS_IRESOURCE (iresource));
 
-			resource = g_hash_table_lookup (priv->resources, autoz_iresource_get_resource_id (iresource));
+			resource = g_hash_table_lookup (priv->resources, zak_autho_iresource_get_resource_id (iresource));
 			if (resource == NULL)
 				{
 					return;
@@ -876,9 +876,9 @@ autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 	r->role = role;
 	r->resource = resource;
 
-	str_id = g_strconcat (autoz_irole_get_role_id (r->role->irole),
+	str_id = g_strconcat (zak_autho_irole_get_role_id (r->role->irole),
 	                      "|",
-	                      (resource == NULL ? "NULL" : autoz_iresource_get_resource_id (r->resource->iresource)),
+	                      (resource == NULL ? "NULL" : zak_autho_iresource_get_resource_id (r->resource->iresource)),
 	                      NULL);
 
 	if (g_hash_table_lookup (priv->rules_deny, str_id) == NULL)
@@ -887,54 +887,54 @@ autoz_deny (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource)
 		}
 }
 
-static AutozIsAllowed
-_autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource, gboolean exclude_null)
+static ZakAuthoIsAllowed
+_zak_autho_is_allowed_role (ZakAutho *zak_autho, Role *role, Resource *resource, gboolean exclude_null)
 {
-	AutozIsAllowed ret;
+	ZakAuthoIsAllowed ret;
 
 	gchar *str_id;
 
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	ZakAuthoPrivate *priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	ret = AUTOZ_NOT_FOUND;
+	ret = ZAK_AUTHO_NOT_FOUND;
 
 	if (!exclude_null)
 		{
 			/* first trying for a rule for every resource */
-			str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+			str_id = g_strconcat (zak_autho_irole_get_role_id (role->irole),
 			                     "|NULL",
 			                     NULL);
 
 			if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
 				{
-					ret = AUTOZ_DENIED;
+					ret = ZAK_AUTHO_DENIED;
 					return ret;
 				}
 			if (g_hash_table_lookup (priv->rules_allow, str_id) != NULL)
 				{
-					ret = AUTOZ_ALLOWED;
+					ret = ZAK_AUTHO_ALLOWED;
 					return ret;
 				}
 		}
 
 	/* and after for specific resource */
-	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+	str_id = g_strconcat (zak_autho_irole_get_role_id (role->irole),
 	                      "|",
-	                      autoz_iresource_get_resource_id (resource->iresource),
+	                      zak_autho_iresource_get_resource_id (resource->iresource),
 	                      NULL);
 
 	if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
 		{
-			ret = AUTOZ_DENIED;
+			ret = ZAK_AUTHO_DENIED;
 			return ret;
 		}
 	if (g_hash_table_lookup (priv->rules_allow, str_id) != NULL)
 		{
-			ret = AUTOZ_ALLOWED;
+			ret = ZAK_AUTHO_ALLOWED;
 			return ret;
 		}
 
-	if (ret == AUTOZ_NOT_FOUND && resource->parents != NULL)
+	if (ret == ZAK_AUTHO_NOT_FOUND && resource->parents != NULL)
 		{
 			/* trying parents */
 			GList *parents;
@@ -942,8 +942,8 @@ _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource, gboolean e
 			parents = g_list_first (resource->parents);
 			while (parents != NULL)
 				{
-					ret = _autoz_is_allowed_resource (autoz, role, (Resource *)parents->data);
-					if (ret != AUTOZ_NOT_FOUND)
+					ret = _zak_autho_is_allowed_resource (zak_autho, role, (Resource *)parents->data);
+					if (ret != ZAK_AUTHO_NOT_FOUND)
 						 {
 						 	break;
 						 }
@@ -952,7 +952,7 @@ _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource, gboolean e
 				}
 		}
 
-	if (ret == AUTOZ_NOT_FOUND && role->parents != NULL)
+	if (ret == ZAK_AUTHO_NOT_FOUND && role->parents != NULL)
 		{
 			/* trying parents */
 			GList *parents;
@@ -960,8 +960,8 @@ _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource, gboolean e
 			parents = g_list_first (role->parents);
 			while (parents != NULL)
 				{
-					ret = _autoz_is_allowed_role (autoz, (Role *)parents->data, resource, exclude_null);
-					if (ret != AUTOZ_NOT_FOUND)
+					ret = _zak_autho_is_allowed_role (zak_autho, (Role *)parents->data, resource, exclude_null);
+					if (ret != ZAK_AUTHO_NOT_FOUND)
 						 {
 						 	break;
 						 }
@@ -973,30 +973,30 @@ _autoz_is_allowed_role (Autoz *autoz, Role *role, Resource *resource, gboolean e
 	return ret;
 }
 
-static AutozIsAllowed
-_autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource)
+static ZakAuthoIsAllowed
+_zak_autho_is_allowed_resource (ZakAutho *zak_autho, Role *role, Resource *resource)
 {
-	AutozIsAllowed ret;
+	ZakAuthoIsAllowed ret;
 
 	gchar *str_id;
 
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	ZakAuthoPrivate *priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	ret = AUTOZ_NOT_FOUND;
+	ret = ZAK_AUTHO_NOT_FOUND;
 
-	str_id = g_strconcat (autoz_irole_get_role_id (role->irole),
+	str_id = g_strconcat (zak_autho_irole_get_role_id (role->irole),
 	                      "|",
-	                      autoz_iresource_get_resource_id (resource->iresource),
+	                      zak_autho_iresource_get_resource_id (resource->iresource),
 	                      NULL);
 
 	if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
 		{
-			ret = AUTOZ_DENIED;
+			ret = ZAK_AUTHO_DENIED;
 			return ret;
 		}
 	else if (g_hash_table_lookup (priv->rules_allow, str_id) != NULL)
 		{
-			ret = AUTOZ_ALLOWED;
+			ret = ZAK_AUTHO_ALLOWED;
 			return ret;
 		}
 	else if (resource->parents != NULL)
@@ -1007,8 +1007,8 @@ _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource)
 			parents = g_list_first (resource->parents);
 			while (parents != NULL)
 				{
-					ret = _autoz_is_allowed_resource (autoz, role, (Resource *)parents->data);
-					if (ret != AUTOZ_NOT_FOUND)
+					ret = _zak_autho_is_allowed_resource (zak_autho, role, (Resource *)parents->data);
+					if (ret != ZAK_AUTHO_NOT_FOUND)
 						 {
 							break;
 						}
@@ -1021,15 +1021,15 @@ _autoz_is_allowed_resource (Autoz *autoz, Role *role, Resource *resource)
 }
 
 static gchar
-*_autoz_remove_role_name_prefix_from_id (Autoz *autoz, const gchar *role_id)
+*_zak_autho_remove_role_name_prefix_from_id (ZakAutho *zak_autho, const gchar *role_id)
 {
 	gchar *ret;
 
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	ret = NULL;
 
@@ -1047,15 +1047,15 @@ static gchar
 }
 
 static gchar
-*_autoz_remove_resource_name_prefix_from_id (Autoz *autoz, const gchar *resource_id)
+*_zak_autho_remove_resource_name_prefix_from_id (ZakAutho *zak_autho, const gchar *resource_id)
 {
 	gchar *ret;
 
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	ret = NULL;
 
@@ -1073,46 +1073,46 @@ static gchar
 }
 
 /**
- * autoz_is_allowed:
- * @autoz: an #Autoz object.
- * @irole: an #AutozIRole object.
- * @iresource: an #AutozIResource object.
+ * zak_autho_is_allowed:
+ * @zak_autho: an #ZakAutho object.
+ * @irole: an #ZakAuthoIRole object.
+ * @iresource: an #ZakAuthoIResource object.
  * @exclude_null: whether or not to exclude roles allowed to every resource.
- * 
+ *
  */
 gboolean
-autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gboolean exclude_null)
+zak_autho_is_allowed (ZakAutho *zak_autho, ZakAuthoIRole *irole, ZakAuthoIResource *iresource, gboolean exclude_null)
 {
 	gboolean ret;
-	AutozIsAllowed isAllowed;
+	ZakAuthoIsAllowed isAllowed;
 
 	Role *role;
 	Resource *resource;
 
 	gchar *str_id;
 
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
-	g_return_val_if_fail (AUTOZ_IS_IROLE (irole), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
+	g_return_val_if_fail (ZAK_AUTHO_IS_IROLE (irole), FALSE);
 
-	_autoz_check_updated (autoz);
+	_zak_autho_check_updated (zak_autho);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 	ret = FALSE;
-	isAllowed = AUTOZ_NOT_FOUND;
+	isAllowed = ZAK_AUTHO_NOT_FOUND;
 
-	role = _autoz_get_role_from_id (autoz, _autoz_remove_role_name_prefix_from_id (autoz, autoz_irole_get_role_id (irole)));
+	role = _zak_autho_get_role_from_id (zak_autho, _zak_autho_remove_role_name_prefix_from_id (zak_autho, zak_autho_irole_get_role_id (irole)));
 	if (role == NULL)
 		{
-			g_warning ("Role «%s» not found.", autoz_irole_get_role_id (irole));
+			g_warning ("Role «%s» not found.", zak_autho_irole_get_role_id (irole));
 			return ret;
 		}
 
 	if (!exclude_null)
 		{
 			/* first trying for a rule for every resource */
-			str_id = g_strconcat (autoz_irole_get_role_id (irole),
+			str_id = g_strconcat (zak_autho_irole_get_role_id (irole),
 			                      "|NULL",
 			                      NULL);
 
@@ -1128,19 +1128,19 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 				}
 		}
 
-	g_return_val_if_fail (AUTOZ_IS_IRESOURCE (iresource), FALSE);
+	g_return_val_if_fail (ZAK_AUTHO_IS_IRESOURCE (iresource), FALSE);
 
-	resource = _autoz_get_resource_from_id (autoz, _autoz_remove_resource_name_prefix_from_id (autoz, autoz_iresource_get_resource_id (iresource)));
+	resource = _zak_autho_get_resource_from_id (zak_autho, _zak_autho_remove_resource_name_prefix_from_id (zak_autho, zak_autho_iresource_get_resource_id (iresource)));
 	if (resource == NULL)
 		{
-			g_warning ("Resource «%s» not found.", autoz_iresource_get_resource_id (iresource));
+			g_warning ("Resource «%s» not found.", zak_autho_iresource_get_resource_id (iresource));
 			return ret;
 		}
 
 	/* and after for specific resource */
-	str_id = g_strconcat (autoz_irole_get_role_id (irole),
+	str_id = g_strconcat (zak_autho_irole_get_role_id (irole),
 	                      "|",
-	                      autoz_iresource_get_resource_id (iresource),
+	                      zak_autho_iresource_get_resource_id (iresource),
 	                      NULL);
 
 	if (g_hash_table_lookup (priv->rules_deny, str_id) != NULL)
@@ -1162,13 +1162,13 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 			parents = g_list_first (resource->parents);
 			while (parents != NULL)
 				{
-					isAllowed = _autoz_is_allowed_resource (autoz, role, (Resource *)parents->data);
-					if (isAllowed == AUTOZ_DENIED)
+					isAllowed = _zak_autho_is_allowed_resource (zak_autho, role, (Resource *)parents->data);
+					if (isAllowed == ZAK_AUTHO_DENIED)
 						 {
 						 	ret = FALSE;
 						 	break;
 						 }
-					else if (isAllowed == AUTOZ_ALLOWED)
+					else if (isAllowed == ZAK_AUTHO_ALLOWED)
 						{
 							ret = TRUE;
 							break;
@@ -1178,7 +1178,7 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 				}
 		}
 
-	if (!ret && isAllowed == AUTOZ_NOT_FOUND && role->parents != NULL)
+	if (!ret && isAllowed == ZAK_AUTHO_NOT_FOUND && role->parents != NULL)
 		{
 			/* trying parents */
 			GList *parents;
@@ -1186,13 +1186,13 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 			parents = g_list_first (role->parents);
 			while (parents != NULL)
 				{
-					isAllowed = _autoz_is_allowed_role (autoz, (Role *)parents->data, resource, exclude_null);
-					if (isAllowed == AUTOZ_DENIED)
+					isAllowed = _zak_autho_is_allowed_role (zak_autho, (Role *)parents->data, resource, exclude_null);
+					if (isAllowed == ZAK_AUTHO_DENIED)
 						 {
 						 	ret = FALSE;
 						 	break;
 						 }
-					else if (isAllowed == AUTOZ_ALLOWED)
+					else if (isAllowed == ZAK_AUTHO_ALLOWED)
 						{
 							ret = TRUE;
 							break;
@@ -1206,20 +1206,20 @@ autoz_is_allowed (Autoz *autoz, AutozIRole *irole, AutozIResource *iresource, gb
 }
 
 /**
- * autoz_clear:
- * @autoz:
+ * zak_autho_clear:
+ * @zak_autho:
  *
  */
 gboolean
-autoz_clear (Autoz *autoz)
+zak_autho_clear (ZakAutho *zak_autho)
 {
 	gboolean ret;
 
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	ret = TRUE;
 
@@ -1237,14 +1237,14 @@ autoz_clear (Autoz *autoz)
 }
 
 /**
- * autoz_get_xml:
- * @autoz: an #Autoz object.
- * 
+ * zak_autho_get_xml:
+ * @zak_autho: an #ZakAutho object.
+ *
  */
 xmlNodePtr
-autoz_get_xml (Autoz *autoz)
+zak_autho_get_xml (ZakAutho *zak_autho)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 	xmlNodePtr ret;
 	xmlNodePtr xnode_parent;
 	xmlNodePtr xnode;
@@ -1258,20 +1258,20 @@ autoz_get_xml (Autoz *autoz)
 
 	GList *parent;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	ret = xmlNewNode (NULL, "autoz");
+	ret = xmlNewNode (NULL, "zak_autho");
 
 	/* roles */
 	g_hash_table_iter_init (&iter, priv->roles);
-	while (g_hash_table_iter_next (&iter, &key, &value)) 
+	while (g_hash_table_iter_next (&iter, &key, &value))
 		{
 			xnode_parent = xmlNewNode (NULL, "role");
 
 			role = (Role *)value;
-			xmlSetProp (xnode_parent, "id", autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+			xmlSetProp (xnode_parent, "id", zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (role->irole)));
 
 			xmlAddChild (ret, xnode_parent);
 
@@ -1281,22 +1281,22 @@ autoz_get_xml (Autoz *autoz)
 					xnode = xmlNewNode (NULL, "parent");
 
 					role = (Role *)parent->data;
-					xmlSetProp (xnode, "id", autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+					xmlSetProp (xnode, "id", zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (role->irole)));
 
 					xmlAddChild (xnode_parent, xnode);
-					
+
 					parent = g_list_next (parent);
 				}
 		}
 
 	/* resources */
 	g_hash_table_iter_init (&iter, priv->resources);
-	while (g_hash_table_iter_next (&iter, &key, &value)) 
+	while (g_hash_table_iter_next (&iter, &key, &value))
 		{
 			xnode_parent = xmlNewNode (NULL, "resource");
 
 			resource = (Resource *)value;
-			xmlSetProp (xnode_parent, "id", autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+			xmlSetProp (xnode_parent, "id", zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (resource->iresource)));
 
 			xmlAddChild (ret, xnode_parent);
 
@@ -1306,27 +1306,27 @@ autoz_get_xml (Autoz *autoz)
 					xnode = xmlNewNode (NULL, "parent");
 
 					resource = (Resource *)parent->data;
-					xmlSetProp (xnode, "id", autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+					xmlSetProp (xnode, "id", zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (resource->iresource)));
 
 					xmlAddChild (xnode_parent, xnode);
-					
+
 					parent = g_list_next (parent);
 				}
 		}
 
 	/* rules allow */
 	g_hash_table_iter_init (&iter, priv->rules_allow);
-	while (g_hash_table_iter_next (&iter, &key, &value)) 
+	while (g_hash_table_iter_next (&iter, &key, &value))
 		{
 			xnode = xmlNewNode (NULL, "rule");
 
 			xmlSetProp (xnode, "allow", "yes");
 
 			rule = (Rule *)value;
-			xmlSetProp (xnode, "role", autoz_irole_get_role_id (AUTOZ_IROLE (rule->role->irole)));
+			xmlSetProp (xnode, "role", zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (rule->role->irole)));
 			if (rule->resource != NULL)
 				{
-					xmlSetProp (xnode, "resource", autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (rule->resource->iresource)));
+					xmlSetProp (xnode, "resource", zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (rule->resource->iresource)));
 				}
 			else
 				{
@@ -1338,17 +1338,17 @@ autoz_get_xml (Autoz *autoz)
 
 	/* rules deny */
 	g_hash_table_iter_init (&iter, priv->rules_deny);
-	while (g_hash_table_iter_next (&iter, &key, &value)) 
+	while (g_hash_table_iter_next (&iter, &key, &value))
 		{
 			xnode = xmlNewNode (NULL, "rule");
 
 			xmlSetProp (xnode, "allow", "no");
 
 			rule = (Rule *)value;
-			xmlSetProp (xnode, "role", autoz_irole_get_role_id (AUTOZ_IROLE (rule->role->irole)));
+			xmlSetProp (xnode, "role", zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (rule->role->irole)));
 			if (rule->resource != NULL)
 				{
-					xmlSetProp (xnode, "resource", autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (rule->resource->iresource)));
+					xmlSetProp (xnode, "resource", zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (rule->resource->iresource)));
 				}
 			else
 				{
@@ -1362,40 +1362,40 @@ autoz_get_xml (Autoz *autoz)
 }
 
 /**
- * autoz_load_from_xml:
- * @autoz: an #Autoz object.
+ * zak_autho_load_from_xml:
+ * @zak_autho: an #ZakAutho object.
  * @xnode:
  * @replace:
- * 
+ *
  */
 gboolean
-autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
+zak_autho_load_from_xml (ZakAutho *zak_autho, xmlNodePtr xnode, gboolean replace)
 {
 	gboolean ret;
 
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
 	xmlNodePtr current;
 	xmlNodePtr current_parent;
 
-	AutozIRole *irole;
-	AutozIResource *iresource;
+	ZakAuthoIRole *irole;
+	ZakAuthoIResource *iresource;
 	gchar *prop;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
 	g_return_val_if_fail (xnode != NULL, FALSE);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	ret = TRUE;
 
 	if (replace)
 		{
 			/* clearing current authorizations */
-			autoz_clear (autoz);
+			zak_autho_clear (zak_autho);
 		}
 
-	if (xmlStrcmp (xnode->name, "autoz") != 0)
+	if (xmlStrcmp (xnode->name, "zak_autho") != 0)
 		{
 			g_warning ("Invalid xml structure.");
 			ret = FALSE;
@@ -1412,9 +1412,9 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 									prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "id")));
 									if (g_strcmp0 (prop, "") != 0)
 										{
-											irole = AUTOZ_IROLE (autoz_role_new (prop));
+											irole = ZAK_AUTHO_IROLE (zak_autho_role_new (prop));
 											g_free (prop);
-											autoz_add_role (autoz, irole);
+											zak_autho_add_role (zak_autho, irole);
 
 											current_parent = current->children;
 											while (current_parent != NULL)
@@ -1425,7 +1425,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 															prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current_parent, "id")));
 															if (g_strcmp0 (prop, "") != 0)
 																{
-																	autoz_add_parent_to_role (autoz, irole,  autoz_get_role_from_id (autoz, prop));
+																	zak_autho_add_parent_to_role (zak_autho, irole,  zak_autho_get_role_from_id (zak_autho, prop));
 																}
 															g_free (prop);
 														}
@@ -1438,8 +1438,8 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 									prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "id")));
 									if (g_strcmp0 (prop, "") != 0)
 										{
-											iresource = AUTOZ_IRESOURCE (autoz_resource_new (prop));
-											autoz_add_resource (autoz, iresource);
+											iresource = ZAK_AUTHO_IRESOURCE (zak_autho_resource_new (prop));
+											zak_autho_add_resource (zak_autho, iresource);
 											g_free (prop);
 
 											current_parent = current->children;
@@ -1451,7 +1451,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 															prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current_parent, "id")));
 															if (g_strcmp0 (prop, "") != 0)
 																{
-																	autoz_add_parent_to_resource (autoz, iresource, autoz_get_resource_from_id (autoz, prop));
+																	zak_autho_add_parent_to_resource (zak_autho, iresource, zak_autho_get_resource_from_id (zak_autho, prop));
 																}
 															g_free (prop);
 														}
@@ -1462,7 +1462,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 							else if (xmlStrcmp (current->name, "rule") == 0)
 								{
 									prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "role")));
-									irole = autoz_get_role_from_id (autoz, prop);
+									irole = zak_autho_get_role_from_id (zak_autho, prop);
 									if (irole != NULL)
 										{
 											prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "resource")));
@@ -1472,18 +1472,18 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 												}
 											else
 												{
-													iresource = autoz_get_resource_from_id (autoz, prop);
+													iresource = zak_autho_get_resource_from_id (zak_autho, prop);
 												}
 											g_free (prop);
 
 											prop = g_strstrip (g_strdup ((gchar *)xmlGetProp (current, "allow")));
 											if (g_strcmp0 (prop, "yes") == 0)
 												{
-													autoz_allow (autoz, irole, iresource);
+													zak_autho_allow (zak_autho, irole, iresource);
 												}
 											else
 												{
-													autoz_deny (autoz, irole, iresource);
+													zak_autho_deny (zak_autho, irole, iresource);
 												}
 											g_free (prop);
 										}
@@ -1498,7 +1498,7 @@ autoz_load_from_xml (Autoz *autoz, xmlNodePtr xnode, gboolean replace)
 }
 
 static gboolean
-_autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix)
+_zak_autho_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix)
 {
 	gboolean ret;
 
@@ -1557,7 +1557,7 @@ _autoz_delete_table_content (GdaConnection *gdacon, const gchar *table_prefix)
 }
 
 static guint
-_autoz_find_new_table_id (GdaConnection *gdacon, const gchar *table_name)
+_zak_autho_find_new_table_id (GdaConnection *gdacon, const gchar *table_name)
 {
 	gchar *sql;
 	GError *error;
@@ -1591,7 +1591,7 @@ _autoz_find_new_table_id (GdaConnection *gdacon, const gchar *table_name)
 }
 
 static guint
-_autoz_get_role_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *role_id)
+_zak_autho_get_role_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *role_id)
 {
 	gchar *sql;
 	GError *error;
@@ -1623,7 +1623,7 @@ _autoz_get_role_id_db (GdaConnection *gdacon, const gchar *table_name, const gch
 }
 
 static guint
-_autoz_get_resource_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *resource_id)
+_zak_autho_get_resource_id_db (GdaConnection *gdacon, const gchar *table_name, const gchar *resource_id)
 {
 	gchar *sql;
 	GError *error;
@@ -1655,18 +1655,18 @@ _autoz_get_resource_id_db (GdaConnection *gdacon, const gchar *table_name, const
 }
 
 /**
- * autoz_save_to_db:
- * @autoz: an #Autoz object.
+ * zak_autho_save_to_db:
+ * @zak_autho: an #ZakAutho object.
  * @gdacon:
  * @table_prefix:
  * @replace:
- * 
+ *
  */
 gboolean
-autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
+zak_autho_save_to_db (ZakAutho *zak_autho, GdaConnection *gdacon,
                   const gchar *table_prefix, gboolean replace)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
 	gboolean ret;
 
@@ -1694,15 +1694,15 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 	guint id_roles;
 	guint id_resources;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
 	g_return_val_if_fail (GDA_IS_CONNECTION (gdacon), FALSE);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	ret = TRUE;
 
 	error = NULL;
-	in_trans = gda_connection_begin_transaction (gdacon, "autoz-save-to-db", 0, &error);
+	in_trans = gda_connection_begin_transaction (gdacon, "zak_autho-save-to-db", 0, &error);
 	if (!in_trans)
 		{
 			g_warning ("Error on starting transaction: %s",
@@ -1721,16 +1721,16 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 	if (replace)
 		{
 			/* deleting table's content */
-			_autoz_delete_table_content (gdacon, prefix);
+			_zak_autho_delete_table_content (gdacon, prefix);
 		}
 
 	/* roles */
 	table_name = g_strdup_printf ("%sroles", prefix);
 	table_name_parent = g_strdup_printf ("%s_parents", table_name);
 	g_hash_table_iter_init (&iter, priv->roles);
-	while (g_hash_table_iter_next (&iter, &key, &value)) 
+	while (g_hash_table_iter_next (&iter, &key, &value))
 		{
-			new_id = _autoz_find_new_table_id (gdacon, table_name);
+			new_id = _zak_autho_find_new_table_id (gdacon, table_name);
 			if (new_id <= 0)
 				{
 					ret = FALSE;
@@ -1745,13 +1745,13 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 			                       " VALUES (%d, '%s')",
 			                       table_name,
 			                       new_id,
-			                       autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+			                       zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (role->irole)));
 			gda_connection_execute_non_select_command (gdacon, sql, &error);
 			g_free (sql);
 			if (error != NULL)
 				{
 					g_warning ("Error on saving role «%s»: %s",
-					           autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)),
+					           zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (role->irole)),
 					           error->message != NULL ? error->message : "no details");
 					continue;
 				}
@@ -1761,7 +1761,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 				{
 					role = (Role *)parent->data;
 
-					id_parent = _autoz_get_role_id_db (gdacon, table_name, autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+					id_parent = _zak_autho_get_role_id_db (gdacon, table_name, zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (role->irole)));
 					if (id_parent > 0)
 						{
 							error = NULL;
@@ -1776,7 +1776,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 							if (error != NULL)
 								{
 									g_warning ("Error on saving role parent «%s»: %s",
-									           autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)),
+									           zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (role->irole)),
 									           error->message != NULL ? error->message : "no details");
 									continue;
 								}
@@ -1784,7 +1784,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 					else
 						{
 							g_warning ("Unable to find parent role «%s»",
-							           autoz_irole_get_role_id (AUTOZ_IROLE (role->irole)));
+							           zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (role->irole)));
 						}
 
 					parent = g_list_next (parent);
@@ -1802,9 +1802,9 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 	table_name = g_strdup_printf ("%sresources", prefix);
 	table_name_parent = g_strdup_printf ("%s_parents", table_name);
 	g_hash_table_iter_init (&iter, priv->resources);
-	while (g_hash_table_iter_next (&iter, &key, &value)) 
+	while (g_hash_table_iter_next (&iter, &key, &value))
 		{
-			new_id = _autoz_find_new_table_id (gdacon, table_name);
+			new_id = _zak_autho_find_new_table_id (gdacon, table_name);
 			if (new_id <= 0)
 				{
 					ret = FALSE;
@@ -1819,13 +1819,13 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 			                       " VALUES (%d, '%s')",
 			                       table_name,
 			                       new_id,
-			                       autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+			                       zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (resource->iresource)));
 			gda_connection_execute_non_select_command (gdacon, sql, &error);
 			g_free (sql);
 			if (error != NULL)
 				{
 					g_warning ("Error on saving resource «%s»: %s",
-					           autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)),
+					           zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (resource->iresource)),
 					           error->message != NULL ? error->message : "no details");
 					continue;
 				}
@@ -1835,7 +1835,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 				{
 					resource = (Resource *)parent->data;
 
-					id_parent = _autoz_get_resource_id_db (gdacon, table_name, autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+					id_parent = _zak_autho_get_resource_id_db (gdacon, table_name, zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (resource->iresource)));
 					if (id_parent > 0)
 						{
 							error = NULL;
@@ -1850,7 +1850,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 							if (error != NULL)
 								{
 									g_warning ("Error on saving resource parent «%s»: %s",
-									           autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)),
+									           zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (resource->iresource)),
 									           error->message != NULL ? error->message : "no details");
 									continue;
 								}
@@ -1858,7 +1858,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 					else
 						{
 							g_warning ("Unable to find parent resource «%s»",
-							           autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (resource->iresource)));
+							           zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (resource->iresource)));
 						}
 
 					parent = g_list_next (parent);
@@ -1874,9 +1874,9 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 	table_name = g_strdup_printf ("%srules", prefix);
 	table_name_parent = g_strdup_printf ("%s_parents", table_name);
 	g_hash_table_iter_init (&iter, priv->rules_allow);
-	while (g_hash_table_iter_next (&iter, &key, &value)) 
+	while (g_hash_table_iter_next (&iter, &key, &value))
 		{
-			new_id = _autoz_find_new_table_id (gdacon, table_name);
+			new_id = _zak_autho_find_new_table_id (gdacon, table_name);
 			if (new_id <= 0)
 				{
 					ret = FALSE;
@@ -1885,12 +1885,12 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 
 			rule = (Rule *)value;
 
-			id_roles = _autoz_get_role_id_db (gdacon, g_strdup_printf ("%sroles", prefix), autoz_irole_get_role_id (AUTOZ_IROLE (rule->role->irole)));
+			id_roles = _zak_autho_get_role_id_db (gdacon, g_strdup_printf ("%sroles", prefix), zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (rule->role->irole)));
 			if (id_roles > 0)
 				{
 					if (rule->resource != NULL)
 						{
-							id_resources = _autoz_get_resource_id_db (gdacon, g_strdup_printf ("%sresources", prefix), autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (rule->resource->iresource)));
+							id_resources = _zak_autho_get_resource_id_db (gdacon, g_strdup_printf ("%sresources", prefix), zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (rule->resource->iresource)));
 						}
 					else
 						{
@@ -1917,9 +1917,9 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 
 	/* rules deny */
 	g_hash_table_iter_init (&iter, priv->rules_deny);
-	while (g_hash_table_iter_next (&iter, &key, &value)) 
+	while (g_hash_table_iter_next (&iter, &key, &value))
 		{
-			new_id = _autoz_find_new_table_id (gdacon, table_name);
+			new_id = _zak_autho_find_new_table_id (gdacon, table_name);
 			if (new_id <= 0)
 				{
 					ret = FALSE;
@@ -1928,12 +1928,12 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 
 			rule = (Rule *)value;
 
-			id_roles = _autoz_get_role_id_db (gdacon, g_strdup_printf ("%sroles", prefix), autoz_irole_get_role_id (AUTOZ_IROLE (rule->role->irole)));
+			id_roles = _zak_autho_get_role_id_db (gdacon, g_strdup_printf ("%sroles", prefix), zak_autho_irole_get_role_id (ZAK_AUTHO_IROLE (rule->role->irole)));
 			if (id_roles > 0)
 				{
 					if (rule->resource != NULL)
 						{
-							id_resources = _autoz_get_resource_id_db (gdacon, g_strdup_printf ("%sresources", prefix), autoz_iresource_get_resource_id (AUTOZ_IRESOURCE (rule->resource->iresource)));
+							id_resources = _zak_autho_get_resource_id_db (gdacon, g_strdup_printf ("%sresources", prefix), zak_autho_iresource_get_resource_id (ZAK_AUTHO_IRESOURCE (rule->resource->iresource)));
 						}
 					else
 						{
@@ -1959,7 +1959,7 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 		}
 
 	error = NULL;
-	if (in_trans && !gda_connection_commit_transaction (gdacon, "autoz-save-to-db", &error))
+	if (in_trans && !gda_connection_commit_transaction (gdacon, "zak_autho-save-to-db", &error))
 		{
 			g_warning ("Error on committing transaction: %s",
 			           error != NULL && error->message != NULL ? error->message : "No details");
@@ -1973,17 +1973,17 @@ autoz_save_to_db (Autoz *autoz, GdaConnection *gdacon,
 }
 
 /**
- * autoz_load_from_db:
- * @autoz: an #Autoz object.
+ * zak_autho_load_from_db:
+ * @zak_autho: an #ZakAutho object.
  * @gdacon:
  * @table_prefix:
  * @replace:
- * 
+ *
  */
 gboolean
-autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace)
+zak_autho_load_from_db (ZakAutho *zak_autho, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace)
 {
-	AutozPrivate *priv;
+	ZakAuthoPrivate *priv;
 
 	gboolean ret;
 
@@ -1998,19 +1998,19 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	gchar *resource_id;
 	guint rule_type;
 
-	AutozIRole *irole;
-	AutozIRole *irole_parent;
-	AutozIResource *iresource;
-	AutozIResource *iresource_parent;
+	ZakAuthoIRole *irole;
+	ZakAuthoIRole *irole_parent;
+	ZakAuthoIResource *iresource;
+	ZakAuthoIResource *iresource_parent;
 	Rule *rule;
 
 	guint row;
 	guint rows;
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
 	g_return_val_if_fail (GDA_IS_CONNECTION (gdacon), FALSE);
 
-	priv = AUTOZ_GET_PRIVATE (autoz);
+	priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	priv->on_loading = TRUE;
 
@@ -2019,7 +2019,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 	if (replace)
 		{
 			/* clearing current authorizations */
-			autoz_clear (autoz);
+			zak_autho_clear (zak_autho);
 		}
 
 	if (table_prefix == NULL)
@@ -2043,8 +2043,8 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 			for (row = 0; row < rows; row++)
 				{
 					error = NULL;
-					irole = AUTOZ_IROLE (autoz_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
-					autoz_add_role (autoz, irole);
+					irole = ZAK_AUTHO_IROLE (zak_autho_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					zak_autho_add_role (zak_autho, irole);
 				}
 		}
 	else if (error != NULL)
@@ -2073,10 +2073,10 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 			for (row = 0; row < rows; row++)
 				{
 					error = NULL;
-					irole = AUTOZ_IROLE (autoz_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					irole = ZAK_AUTHO_IROLE (zak_autho_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
 					error = NULL;
-					irole_parent = AUTOZ_IROLE (autoz_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 1, row, &error))));
-					autoz_add_parent_to_role (autoz, irole, irole_parent);
+					irole_parent = ZAK_AUTHO_IROLE (zak_autho_role_new (gda_value_stringify (gda_data_model_get_value_at (dm, 1, row, &error))));
+					zak_autho_add_parent_to_role (zak_autho, irole, irole_parent);
 				}
 		}
 	else if (error != NULL)
@@ -2099,8 +2099,8 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 			for (row = 0; row < rows; row++)
 				{
 					error = NULL;
-					iresource = AUTOZ_IRESOURCE (autoz_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
-					autoz_add_resource (autoz, iresource);
+					iresource = ZAK_AUTHO_IRESOURCE (zak_autho_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					zak_autho_add_resource (zak_autho, iresource);
 				}
 		}
 	else if (error != NULL)
@@ -2129,10 +2129,10 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 			for (row = 0; row < rows; row++)
 				{
 					error = NULL;
-					iresource = AUTOZ_IRESOURCE (autoz_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
+					iresource = ZAK_AUTHO_IRESOURCE (zak_autho_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 0, row, &error))));
 					error = NULL;
-					iresource_parent = AUTOZ_IRESOURCE (autoz_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 1, row, &error))));
-					autoz_add_parent_to_resource (autoz, iresource, iresource_parent);
+					iresource_parent = ZAK_AUTHO_IRESOURCE (zak_autho_resource_new (gda_value_stringify (gda_data_model_get_value_at (dm, 1, row, &error))));
+					zak_autho_add_parent_to_resource (zak_autho, iresource, iresource_parent);
 				}
 		}
 	else if (error != NULL)
@@ -2169,7 +2169,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 					else if (gval != NULL && error == NULL && !gda_value_is_null (gval))
 						{
 							role_id = gda_value_stringify (gval);
-							irole = autoz_get_role_from_id (autoz, role_id);
+							irole = zak_autho_get_role_from_id (zak_autho, role_id);
 							if (irole != NULL)
 								{
 									error = NULL;
@@ -2186,7 +2186,7 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 									else
 										{
 											resource_id = gda_value_stringify (gval);
-											iresource = autoz_get_resource_from_id (autoz, resource_id);
+											iresource = zak_autho_get_resource_from_id (zak_autho, resource_id);
 										}
 
 									error = NULL;
@@ -2201,11 +2201,11 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 											rule_type = g_value_get_int (gval);
 											if (rule_type == 1)
 												{
-													autoz_allow (autoz, irole, iresource);
+													zak_autho_allow (zak_autho, irole, iresource);
 												}
 											else if (rule_type == 2)
 												{
-													autoz_deny (autoz, irole, iresource);
+													zak_autho_deny (zak_autho, irole, iresource);
 												}
 											else
 												{
@@ -2238,11 +2238,11 @@ autoz_load_from_db (Autoz *autoz, GdaConnection *gdacon, const gchar *table_pref
 }
 
 gboolean
-autoz_load_from_db_with_monitor (Autoz *autoz, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace)
+zak_autho_load_from_db_with_monitor (ZakAutho *zak_autho, GdaConnection *gdacon, const gchar *table_prefix, gboolean replace)
 {
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	ZakAuthoPrivate *priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	g_return_val_if_fail (IS_AUTOZ (autoz), FALSE);
+	g_return_val_if_fail (IS_ZAK_AUTHO (zak_autho), FALSE);
 	g_return_val_if_fail (GDA_IS_CONNECTION (gdacon), FALSE);
 
 	priv->gdacon = gdacon;
@@ -2259,11 +2259,11 @@ autoz_load_from_db_with_monitor (Autoz *autoz, GdaConnection *gdacon, const gcha
 			priv->table_prefix = g_strdup (table_prefix);
 		}
 
-	autoz_load_from_db (autoz, gdacon, table_prefix, replace);
+	zak_autho_load_from_db (zak_autho, gdacon, table_prefix, replace);
 }
 
 static void
-_autoz_check_updated (Autoz *autoz)
+_zak_autho_check_updated (ZakAutho *zak_autho)
 {
 	GError *error;
 	gchar *sql;
@@ -2273,9 +2273,9 @@ _autoz_check_updated (Autoz *autoz)
 	const GdaTimestamp *gda_timestamp;
 	GDateTime *gda_datetime;
 
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	ZakAuthoPrivate *priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
-	g_return_if_fail (IS_AUTOZ (autoz));
+	g_return_if_fail (IS_ZAK_AUTHO (zak_autho));
 
 	if (priv->on_loading)
 		{
@@ -2308,7 +2308,7 @@ _autoz_check_updated (Autoz *autoz)
 					if (g_date_time_compare (priv->gdt_last_load, gda_datetime) < 0)
 						{
 							/* to reload */
-							autoz_load_from_db_with_monitor (autoz, priv->gdacon, priv->table_prefix, TRUE);
+							zak_autho_load_from_db_with_monitor (zak_autho, priv->gdacon, priv->table_prefix, TRUE);
 						}
 					g_date_time_unref (gda_datetime);
 				}
@@ -2324,13 +2324,13 @@ _autoz_check_updated (Autoz *autoz)
 
 /* PRIVATE */
 static void
-autoz_set_property (GObject *object,
+zak_autho_set_property (GObject *object,
                     guint property_id,
                     const GValue *value,
                     GParamSpec *pspec)
 {
-	Autoz *autoz = (Autoz *)object;
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	ZakAutho *zak_autho = (ZakAutho *)object;
+	ZakAuthoPrivate *priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	switch (property_id)
 		{
@@ -2341,13 +2341,13 @@ autoz_set_property (GObject *object,
 }
 
 static void
-autoz_get_property (GObject *object,
+zak_autho_get_property (GObject *object,
                     guint property_id,
                     GValue *value,
                     GParamSpec *pspec)
 {
-	Autoz *autoz = (Autoz *)object;
-	AutozPrivate *priv = AUTOZ_GET_PRIVATE (autoz);
+	ZakAutho *zak_autho = (ZakAutho *)object;
+	ZakAuthoPrivate *priv = ZAK_AUTHO_GET_PRIVATE (zak_autho);
 
 	switch (property_id)
 		{

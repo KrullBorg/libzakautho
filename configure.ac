@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.65)
-AC_INIT([libautoz], [0.0.5], [azagli@libero.it])
+AC_INIT([libzakautho], [0.0.5], [azagli@libero.it])
 AC_CONFIG_SRCDIR([src/autoz.c])
 AC_CONFIG_HEADER([config.h])
 
@@ -48,7 +48,7 @@ AC_C_CONST
 
 # Checks for library functions.
 AC_CONFIG_FILES([
-  libautoz.pc
+  libzakautho.pc
   Makefile
   src/Makefile
   tests/Makefile
