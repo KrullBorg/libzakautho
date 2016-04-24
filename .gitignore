@@ -49,3 +49,5 @@ stamp-it
 intltool-*
 Rules-quot
 *.exe
+config.h.in
+compile

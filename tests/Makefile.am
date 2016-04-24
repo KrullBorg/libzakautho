@@ -9,7 +9,7 @@ noinst_PROGRAMS = test \
                   test_from_xml \
                   test_from_xml_to_db
 
-LDADD = $(top_builddir)/src/libautoz.la
+LDADD = $(top_builddir)/src/libzakautho.la
 
 EXTRA_DIST = test_from_xml.xml \
              test_to_db.db

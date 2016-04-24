@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2015 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,72 +23,72 @@
 #include "resource.h"
 #include "resource_interface.h"
 
-static void autoz_resource_class_init (AutozResourceClass *class);
-static void autoz_resource_init (AutozResource *form);
+static void zak_autho_resource_class_init (ZakAuthoResourceClass *class);
+static void zak_autho_resource_init (ZakAuthoResource *form);
 
-static void autoz_iresource_interface_init (AutozIResourceIface *iface);
+static void zak_autho_iresource_interface_init (ZakAuthoIResourceIface *iface);
 
-static const gchar *autoz_resource_get_resource_id (AutozIResource *iresource);
+static const gchar *zak_autho_resource_get_resource_id (ZakAuthoIResource *iresource);
 
-static void autoz_resource_set_property (GObject *object,
+static void zak_autho_resource_set_property (GObject *object,
                                guint property_id,
                                const GValue *value,
                                GParamSpec *pspec);
-static void autoz_resource_get_property (GObject *object,
+static void zak_autho_resource_get_property (GObject *object,
                                guint property_id,
                                GValue *value,
                                GParamSpec *pspec);
 
-#define AUTOZ_RESOURCE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), AUTOZ_TYPE_RESOURCE, AutozResourcePrivate))
+#define ZAK_AUTHO_RESOURCE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ZAK_AUTHO_TYPE_RESOURCE, ZakAuthoResourcePrivate))
 
-typedef struct _AutozResourcePrivate AutozResourcePrivate;
-struct _AutozResourcePrivate
+typedef struct _ZakAuthoResourcePrivate ZakAuthoResourcePrivate;
+struct _ZakAuthoResourcePrivate
 	{
 		gchar *resource_id;
 	};
 
-G_DEFINE_TYPE_WITH_CODE (AutozResource, autoz_resource, G_TYPE_OBJECT,
-                         G_IMPLEMENT_INTERFACE (AUTOZ_TYPE_IRESOURCE,
-                                                autoz_iresource_interface_init));
+G_DEFINE_TYPE_WITH_CODE (ZakAuthoResource, zak_autho_resource, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (ZAK_AUTHO_TYPE_IRESOURCE,
+                                                zak_autho_iresource_interface_init));
 
 static void
-autoz_resource_class_init (AutozResourceClass *class)
+zak_autho_resource_class_init (ZakAuthoResourceClass *class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (class);
 
-	object_class->set_property = autoz_resource_set_property;
-	object_class->get_property = autoz_resource_get_property;
+	object_class->set_property = zak_autho_resource_set_property;
+	object_class->get_property = zak_autho_resource_get_property;
 
-	g_type_class_add_private (object_class, sizeof (AutozResourcePrivate));
+	g_type_class_add_private (object_class, sizeof (ZakAuthoResourcePrivate));
 }
 
 static void
-autoz_resource_init (AutozResource *form)
+zak_autho_resource_init (ZakAuthoResource *form)
 {
-	AutozResourcePrivate *priv = AUTOZ_RESOURCE_GET_PRIVATE (form);
+	ZakAuthoResourcePrivate *priv = ZAK_AUTHO_RESOURCE_GET_PRIVATE (form);
 }
 
 static void
-autoz_iresource_interface_init (AutozIResourceIface *iface)
+zak_autho_iresource_interface_init (ZakAuthoIResourceIface *iface)
 {
-	iface->get_resource_id = autoz_resource_get_resource_id;
+	iface->get_resource_id = zak_autho_resource_get_resource_id;
 }
 
 /**
- * autoz_resource_new:
+ * zak_autho_resource_new:
  * @resource_id:
  *
- * Returns: the newly created #AutozResource object.
+ * Returns: the newly created #ZakAuthoResource object.
  */
-AutozResource
-*autoz_resource_new (const gchar *resource_id)
+ZakAuthoResource
+*zak_autho_resource_new (const gchar *resource_id)
 {
-	AutozResource *resource;
-	AutozResourcePrivate *priv;
+	ZakAuthoResource *resource;
+	ZakAuthoResourcePrivate *priv;
 
-	resource = AUTOZ_RESOURCE (g_object_new (autoz_resource_get_type (), NULL));
+	resource = ZAK_AUTHO_RESOURCE (g_object_new (zak_autho_resource_get_type (), NULL));
 
-	priv = AUTOZ_RESOURCE_GET_PRIVATE (resource);
+	priv = ZAK_AUTHO_RESOURCE_GET_PRIVATE (resource);
 
 	priv->resource_id = g_strdup (resource_id);
 
@@ -97,17 +97,17 @@ AutozResource
 
 /* PRIVATE */
 static const gchar
-*autoz_resource_get_resource_id (AutozIResource *iresource)
+*zak_autho_resource_get_resource_id (ZakAuthoIResource *iresource)
 {
-	AutozResourcePrivate *priv;
+	ZakAuthoResourcePrivate *priv;
 
 	const gchar *ret;
 
 	ret = NULL;
 
-	g_return_val_if_fail (AUTOZ_IS_RESOURCE (iresource), ret);
+	g_return_val_if_fail (ZAK_AUTHO_IS_RESOURCE (iresource), ret);
 
-	priv = AUTOZ_RESOURCE_GET_PRIVATE (iresource);
+	priv = ZAK_AUTHO_RESOURCE_GET_PRIVATE (iresource);
 
 	ret = (const gchar *)g_strdup (priv->resource_id);
 
@@ -115,14 +115,14 @@ static const gchar
 }
 
 static void
-autoz_resource_set_property (GObject *object,
+zak_autho_resource_set_property (GObject *object,
                    guint property_id,
                    const GValue *value,
                    GParamSpec *pspec)
 {
-	AutozResource *form = (AutozResource *)object;
+	ZakAuthoResource *form = (ZakAuthoResource *)object;
 
-	AutozResourcePrivate *priv = AUTOZ_RESOURCE_GET_PRIVATE (form);
+	ZakAuthoResourcePrivate *priv = ZAK_AUTHO_RESOURCE_GET_PRIVATE (form);
 
 	switch (property_id)
 		{
@@ -133,14 +133,14 @@ autoz_resource_set_property (GObject *object,
 }
 
 static void
-autoz_resource_get_property (GObject *object,
+zak_autho_resource_get_property (GObject *object,
                    guint property_id,
                    GValue *value,
                    GParamSpec *pspec)
 {
-	AutozResource *form = (AutozResource *)object;
+	ZakAuthoResource *form = (ZakAuthoResource *)object;
 
-	AutozResourcePrivate *priv = AUTOZ_RESOURCE_GET_PRIVATE (form);
+	ZakAuthoResourcePrivate *priv = ZAK_AUTHO_RESOURCE_GET_PRIVATE (form);
 
 	switch (property_id)
 		{

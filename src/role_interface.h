@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Andrea Zagli <azagli@libero.it>
+ * Copyright (C) 2010-2015 Andrea Zagli <azagli@libero.it>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef __LIBAUTOZ_IROLE_H__
-#define __LIBAUTOZ_IROLE_H__
+#ifndef __LIB_ZAK_AUTHO_IROLE_H__
+#define __LIB_ZAK_AUTHO_IROLE_H__
 
 #include <glib-object.h>
 
@@ -25,28 +25,28 @@
 G_BEGIN_DECLS
 
 
-#define AUTOZ_TYPE_IROLE             (autoz_irole_get_type ())
-#define AUTOZ_IROLE(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), AUTOZ_TYPE_IROLE, AutozIRole))
-#define AUTOZ_IS_IROLE(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AUTOZ_TYPE_IROLE))
-#define AUTOZ_IROLE_GET_IFACE(obj)   (G_TYPE_INSTANCE_GET_INTERFACE ((obj), AUTOZ_TYPE_IROLE, AutozIRoleIface))
+#define ZAK_AUTHO_TYPE_IROLE             (zak_autho_irole_get_type ())
+#define ZAK_AUTHO_IROLE(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), ZAK_AUTHO_TYPE_IROLE, ZakAuthoIRole))
+#define ZAK_AUTHO_IS_IROLE(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), ZAK_AUTHO_TYPE_IROLE))
+#define ZAK_AUTHO_IROLE_GET_IFACE(obj)   (G_TYPE_INSTANCE_GET_INTERFACE ((obj), ZAK_AUTHO_TYPE_IROLE, ZakAuthoIRoleIface))
 
 
-typedef struct _AutozIRole AutozIRole;
-typedef struct _AutozIRoleIface AutozIRoleIface;
+typedef struct _ZakAuthoIRole ZakAuthoIRole;
+typedef struct _ZakAuthoIRoleIface ZakAuthoIRoleIface;
 
-struct _AutozIRoleIface
+struct _ZakAuthoIRoleIface
 	{
 		GTypeInterface g_iface;
 
-		const gchar *(*get_role_id) (AutozIRole *irole);
+		const gchar *(*get_role_id) (ZakAuthoIRole *irole);
 	};
 
-GType autoz_irole_get_type (void) G_GNUC_CONST;
+GType zak_autho_irole_get_type (void) G_GNUC_CONST;
 
-const gchar *autoz_irole_get_role_id (AutozIRole *irole);
+const gchar *zak_autho_irole_get_role_id (ZakAuthoIRole *irole);
 
 
 G_END_DECLS
 
 
-#endif /* __LIBAUTOZ_IROLE_H__ */
+#endif /* __LIB_ZAK_AUTHO_IROLE_H__ */
